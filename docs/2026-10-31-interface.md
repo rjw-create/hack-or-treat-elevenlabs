@@ -95,9 +95,12 @@ forward slashes. Samples of every file are in `core/fixtures/sample/`.
   3-6 lines and at most ~600 characters, so the player's per-segment highlight covers a few lines, not
   twenty. 2,000 characters stays the hard limit the validator enforces. Dialogue is priced per character,
   so smaller segments should not change the credit total; Core confirms this in Step 0.
-- **Per-line timing (not yet available):** if the ElevenLabs dialogue API turns out to return per-line
-  timestamps, Core will add them to dialogue segments as a new optional field, described here first.
-  Until then, follow-along highlighting works per segment.
+- **Per-line timing (optional field `line_times_ms`, added 2026-10-31):** Core renders dialogue with
+  `text_to_dialogue.convert_with_timestamps`, whose `voice_segments` give each input line a start and
+  end time. Each dialogue segment then carries
+  `"line_times_ms": [{"line_id": "s01-l001", "start_ms": 0, "end_ms": 4210}, ...]`, with times relative
+  to the start of that segment's stem. The field may be missing (placeholder stems, or a line the API
+  returned no timing for); then fall back to per-segment highlighting.
 - Every script line appears in exactly one dialogue segment, in script order. Proof can rely on this.
 - `beds` play *under* the segments, from the start of `from_segment` to the end of `to_segment`.
   `loop: true` means repeat the file to fill the span. `gain_db` is Core's suggested starting level;
@@ -123,7 +126,12 @@ One JSON object per line, appended for every ElevenLabs call, including cache hi
  "credits_estimated": 1834, "credits_actual": null, "cache_hit": false,
  "item_id": "s01-d001", "output": "stems/dialogue/s01-d001.mp3"}
 ```
-- `feature`: `dialogue`, `sfx`, `music`, `voice_design`, or `flat`.
+- `feature`: `dialogue`, `sfx`, `music`, `voice_design`, or `flat`. Ambience beds are sound-effect calls
+  and are logged as `sfx` (their `item_id` is the bed id, e.g. `s01-amb`).
+- `output` is relative to the folder holding `usage.jsonl`. A one-scene preview writes its stems under
+  `preview-s01/`, so its rows read e.g. `preview-s01/stems/dialogue/s01-d001.mp3`.
+- Core also keeps `pricing.json` next to `usage.jsonl`: the dialogue rate per character and the
+  per-call SFX, ambience and music prices, each marked as assumed or measured.
 - `credits_estimated` comes from Core's budget rules. `credits_actual` is filled only when Core can
   measure it (balance read before and after a call); otherwise it is `null`. Proof should report which
   of the two each number is based on.

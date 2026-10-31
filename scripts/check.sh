@@ -16,6 +16,9 @@ trap 'rm -rf "$tmp"' EXIT
 "$PY" -m core.placeholders --out "$tmp/placeholder"
 "$PY" -m core.interface "$tmp/placeholder"
 
+echo "== Core pipeline tests (fake ElevenLabs client: no credits, keys or network)"
+"$PY" -m unittest discover -s core/tests -t .
+
 echo "== Proof eval tests"
 "$PY" -m unittest discover -s evals -t .
 
