@@ -4,6 +4,7 @@ The rules here are the ones written down in docs/2026-10-31-interface.md. The re
 the same checks on its own output, so the sample files and the real files can't drift apart.
 
 Usage: python -m core.interface <folder with script.json, voices.json, segments.json>
+       python -m core.interface <path to a script.json>   (script only)
 """
 import json
 import re
@@ -84,6 +85,8 @@ def check_script(script):
                 errors.append(f"script.json: line {line_id!r} has unknown speaker {line.get('speaker')!r}")
             if not strip_tags(line.get("text", "")):
                 errors.append(f"script.json: line {line_id!r} has no spoken text")
+            if "sfx_after" in line and not (isinstance(line["sfx_after"], str) and line["sfx_after"].strip()):
+                errors.append(f"script.json: line {line_id!r} sfx_after must be a non-empty description")
     if not seen:
         errors.append("script.json: no lines")
     return errors
@@ -180,7 +183,9 @@ def main(argv):
     if len(argv) != 1:
         print("usage: python -m core.interface <folder>", file=sys.stderr)
         return 2
-    errors = check_folder(argv[0])
+    # A single script.json (the committed adaptation) is checked on its own, before voices or stems exist.
+    path = Path(argv[0])
+    errors = check_script(load_json(path)) if path.is_file() else check_folder(path)
     for e in errors:
         print(f"ERROR {e}", file=sys.stderr)
     if errors:

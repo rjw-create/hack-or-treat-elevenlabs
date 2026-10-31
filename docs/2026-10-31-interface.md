@@ -45,6 +45,12 @@ forward slashes. Samples of every file are in `core/fixtures/sample/`.
 - `lines[].text` keeps ElevenLabs audio tags inline, e.g. `[whispers]`. For display or word matching,
   strip them: remove every `[...]` and collapse spaces (`core.interface.strip_tags`).
 - Line ids are `s<scene, 2 digits>-l<line, 3 digits>` and unique across the whole script.
+- Optional `lines[].sfx_after`: a sound-effect description to play right after that line, e.g.
+  `"sfx_after": "three slow knocks on a wooden front door"`. Core's render step turns each one into an
+  `sfx` segment in `segments.json`; Surface and Proof read SFX from `segments.json`, not from here.
+  (Added 2026-10-31; existing files without it stay valid.)
+- The real adaptation lives at `core/adaptation/script.json` (committed, reviewable); render copies it
+  into the output folder.
 
 ## voices.json
 ```json
