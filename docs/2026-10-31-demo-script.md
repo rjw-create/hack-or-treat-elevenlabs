@@ -8,7 +8,7 @@ Before recording:
 - Serve it: `python -m web.serve`, open http://127.0.0.1:8000/web/?mix=real
 - Browser at a normal desktop width, zoom 125% so the script is readable in the video.
 - System audio captured; voiceover recorded separately and kept quieter than the drama.
-- Or record the live page instead of a local server: https://rjw-create.github.io/hack-or-treat-elevenlabs/demo/
+- Or record the live page instead of a local server: https://rjw-create.github.io/hack-or-treat-full-cast/demo/
 
 | Time | On screen | Voiceover |
 | --- | --- | --- |

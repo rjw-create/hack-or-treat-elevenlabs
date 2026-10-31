@@ -9,7 +9,7 @@ The story is **The Monkey's Paw** by W. W. Jacobs (first published 1902), abridg
 
 Entry for Hack or Treat (2026-10-31), category **Best Project Built With ElevenLabs**.
 
-**Listen:** https://rjw-create.github.io/hack-or-treat-elevenlabs/demo/ (the player with the final mix,
+**Listen:** https://rjw-create.github.io/hack-or-treat-full-cast/demo/ (the player with the final mix,
 published from [`docs/demo/`](docs/demo/); it is a copy of `web/` plus the mixed audio).
 
 ## What it does
