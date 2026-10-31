@@ -5,15 +5,12 @@ character, sound effects between lines, ambience and a low drone under the scene
 along as it plays. The player has a before/after toggle, so you can hear the same passage as a plain
 one-voice audiobook and then as the full cast.
 
-The story is **The Monkey's Paw** by W. W. Jacobs (first published 1902), abridged to about five minutes.
+The story is **The Monkey's Paw** by W. W. Jacobs (first published 1902), abridged to 5 minutes 28 seconds.
 
 Entry for Hack or Treat (2026-10-31), category **Best Project Built With ElevenLabs**.
 
-> Numbers marked `[TBD: ...]` are filled in from the real render and Proof's credit report. They are
-> left blank on purpose until they are measured.
-
 ## What it does
-1. **Adapt.** The story is cut down to a ~5-minute script: three scenes ("The paw", "The visitor",
+1. **Adapt.** The story is cut down to a short script: three scenes ("The paw", "The visitor",
    "The knocking"), 49 lines and six speaking parts. Lines carry ElevenLabs audio tags such as
    `[whispers]` for delivery. The adaptation was written with Claude Code during the hackathon session
    and then checked by hand, not generated through an API call at run time. It is in
@@ -25,8 +22,10 @@ Entry for Hack or Treat (2026-10-31), category **Best Project Built With ElevenL
    speakers react to each other. Sound effects, ambience and the theme (a low drone, not composed
    music) are generated from short text cues with ElevenLabs sound effects. Every generated clip is
    cached, so nothing is paid for twice.
-4. **Mix.** `web/mix.py` measures every clip, places them in order with their pauses, loops the
-   ambience under each scene, lowers the drone while people talk, and writes one MP3.
+4. **Mix.** `web/mix.py` measures every clip, trims long silence at clip edges so the planned pauses
+   are the ones you hear, brings sound effects and ambience to common levels, places everything in
+   order, loops the ambience under each scene, lowers the drone while people talk, and writes one MP3
+   at about -16 LUFS.
 5. **Play.** `web/index.html` plays the drama with the line being spoken highlighted, using the
    per-line times ElevenLabs returns with the dialogue (if a clip has none, its few lines light
    together). It also has a chapter list
@@ -66,11 +65,14 @@ and the estimated credits without spending any).
 ## Budget and scope, honestly
 - The whole project runs on a **10,000-credit** ElevenLabs budget, with at least 1,500 kept in reserve
   for re-renders. Dialogue costs credits per character of text, so the budget sets the length.
-- That is why the drama is **abridged to about five minutes**. It is not the full story: scenes are
+- That is why the drama is **abridged to 5 minutes 28 seconds**. It is not the full story: scenes are
   shortened and some description is cut. The original is short and worth reading.
-- Credits used for the final render: `[TBD: from python -m evals.credits]`. That report says for every
-  number whether it was measured from the account balance or estimated from Core's cost rules.
-- Finished length: `[TBD: from timeline.json]`.
+- **Credits used: 7,280 of 10,000**, including the scene previews and re-renders, by Core's reading of
+  the account balance. The per-call log tells a different story: `python -m evals.credits` sums it to
+  14,687, but only 3 of its 30 paid calls have a measured cost and the other 27 are estimates, so it
+  is not a reliable total. The two figures have not been reconciled; the account page is the
+  authority.
+- Finished length: **5:28** (328.4 s, from the mixer's `timeline.json`), 49 lines in 3 scenes.
 
 ## Checking the result
 All of these read local files only and spend no credits.

@@ -38,12 +38,46 @@ TARGET_LUFS = -16.0  # integrated loudness of every published file (Jackson, 202
 CEILING_FRACTION = 0.84
 SILENT_LUFS = -70.0  # below this a file is effectively silent; raising it would only raise noise
 INPUT_LUFS = re.compile(r'"input_i"\s*:\s*"([^"]+)"')
+SILENCE_START = re.compile(r"silence_start: (-?[\d.]+)")
+SILENCE_END = re.compile(r"silence_end: (-?[\d.]+)")
 TIMELINE_VERSION = 1
 
+# Edge silence (Jackson approved the fixes, 2026-10-31): generated clips carry up to ~0.75 s of
+# silence at their ends, which stretched the planned 350 ms pauses to about 1 s.
+SILENCE_DB = -50  # same threshold as Proof's audio checks
+EDGE_KEEP_MS = 100  # leave a little room so a breath or a soft consonant is never clipped
+# Common levels before Core's planned gain, so one quiet clip (a -51 LUFS ambience, an sfx 8 dB under
+# the rest) doesn't vanish. Starting points from the scenes 1-2 medians: sfx -17.2, ambience -28.9.
+LEVEL_LUFS = {"sfx": -18.0, "ambience": -29.0}
+MAX_LEVEL_BOOST_DB = 24.0  # enough for the quiet ambience, not enough to turn hiss into a bed
 
-def absolute_line_times(seg, start_ms, end_ms):
+
+def edge_trims(silences_ms, length_ms, keep_ms=EDGE_KEEP_MS):
+    """How much to cut from the start and end of a clip, given its silent stretches (start, end)."""
+    lead_ms = trail_ms = 0
+    for start_ms, end_ms in silences_ms:
+        if start_ms <= 0:
+            lead_ms = max(lead_ms, end_ms - keep_ms)
+        if end_ms >= length_ms:
+            trail_ms = max(trail_ms, length_ms - start_ms - keep_ms)
+    lead_ms, trail_ms = max(0, lead_ms), max(0, trail_ms)
+    if lead_ms + trail_ms >= length_ms:  # all silence: leave it alone rather than cut it to nothing
+        return 0, 0
+    return lead_ms, trail_ms
+
+
+def level_gain_db(kind, measured_lufs):
+    """Gain that brings an sfx or ambience clip to its common level; other kinds are left as they are."""
+    target = LEVEL_LUFS.get(kind)
+    if target is None or not math.isfinite(measured_lufs) or measured_lufs < SILENT_LUFS:
+        return 0.0
+    return round(min(target - measured_lufs, MAX_LEVEL_BOOST_DB), 2)
+
+
+def absolute_line_times(seg, start_ms, end_ms, lead_trim_ms=0):
     """Move Core's per-line times (relative to the stem) onto the drama's timeline.
 
+    lead_trim_ms is the silence cut from the start of the stem, so every time moves back by it.
     Returns None unless every line in the segment has a time: with one line missing, the line before
     it would stay highlighted while it is spoken, so the player highlights the whole segment instead.
     """
@@ -51,23 +85,30 @@ def absolute_line_times(seg, start_ms, end_ms):
     line_ids = seg.get("line_ids") or []
     if not line_ids or any(i not in times for i in line_ids):
         return None
-    return [{"line_id": i, "start_ms": min(start_ms + times[i]["start_ms"], end_ms),
-             "end_ms": min(start_ms + times[i]["end_ms"], end_ms)} for i in line_ids]
+
+    def place(ms):
+        return min(max(start_ms + ms - lead_trim_ms, start_ms), end_ms)
+    return [{"line_id": i, "start_ms": place(times[i]["start_ms"]), "end_ms": place(times[i]["end_ms"])}
+            for i in line_ids]
 
 
-def build_timeline(segments, segment_ms, bed_ms, flat_ms=None):
+def build_timeline(segments, segment_ms, bed_ms, flat_ms=None, trims=None, levels=None):
     """Work out where every segment, bed and chapter lands, in ms from the start of the drama.
 
-    segment_ms and bed_ms map ids to measured stem lengths. No files and no ffmpeg here,
-    so the timing rules can be tested on their own.
+    segment_ms and bed_ms map ids to measured stem lengths. trims maps a segment id to the
+    (lead, trail) ms of edge silence to cut, and levels maps a segment or bed id to a gain in dB.
+    No files and no ffmpeg here, so the timing rules can be tested on their own.
     """
+    trims, levels = trims or {}, levels or {}
     placed = []
     t_ms = 0
     for seg in segments["segments"]:
-        end_ms = t_ms + segment_ms[seg["id"]]
+        lead_ms, trail_ms = trims.get(seg["id"], (0, 0))
+        end_ms = t_ms + segment_ms[seg["id"]] - lead_ms - trail_ms
         placed.append({"id": seg["id"], "kind": seg["kind"], "scene": seg["scene"], "file": seg["file"],
-                       "start_ms": t_ms, "end_ms": end_ms, "line_ids": seg.get("line_ids", []),
-                       "line_times": absolute_line_times(seg, t_ms, end_ms), "cue": seg.get("cue")})
+                       "start_ms": t_ms, "end_ms": end_ms, "trim_start_ms": lead_ms,
+                       "level_db": levels.get(seg["id"], 0.0), "line_ids": seg.get("line_ids", []),
+                       "line_times": absolute_line_times(seg, t_ms, end_ms, lead_ms), "cue": seg.get("cue")})
         t_ms = end_ms + seg["gap_after_ms"]
     by_id = {s["id"]: s for s in placed}
 
@@ -79,7 +120,8 @@ def build_timeline(segments, segment_ms, bed_ms, flat_ms=None):
         length_ms = span_ms if bed["loop"] else min(span_ms, bed_ms[bed["id"]])
         beds.append({"id": bed["id"], "kind": bed["kind"], "file": bed["file"],
                      "start_ms": start_ms, "end_ms": start_ms + length_ms, "gain_db": bed["gain_db"],
-                     "loop": bed["loop"], "duck": bed["duck_under_dialogue"]})
+                     "level_db": levels.get(bed["id"], 0.0), "loop": bed["loop"],
+                     "duck": bed["duck_under_dialogue"]})
 
     chapters = [{"title": c["title"], "segment": c["starts_at_segment"],
                  "start_ms": by_id[c["starts_at_segment"]]["start_ms"]}
@@ -125,7 +167,15 @@ def filter_graph(timeline):
     for seg in timeline["segments"]:
         i = len(inputs)
         inputs.append((seg["file"], False))
-        chains.append(f"[{i}:a]{fmt},adelay={seg['start_ms']}:all=1[a{i}]")
+        steps = [fmt]
+        if "trim_start_ms" in seg:
+            # Cut edge silence: keep exactly the placed length, starting after the trimmed lead.
+            steps += [f"atrim=start={seg['trim_start_ms'] / 1000:.3f}:"
+                      f"duration={(seg['end_ms'] - seg['start_ms']) / 1000:.3f}", "asetpts=PTS-STARTPTS"]
+        if seg.get("level_db"):
+            steps.append(f"volume={seg['level_db']}dB")
+        steps.append(f"adelay={seg['start_ms']}:all=1")
+        chains.append(f"[{i}:a]" + ",".join(steps) + f"[a{i}]")
         labels.append(f"[a{i}]")
 
     dialogue = [(s["start_ms"], s["end_ms"]) for s in timeline["segments"] if s["kind"] == "dialogue"]
@@ -136,7 +186,7 @@ def filter_graph(timeline):
         fade_s = min(BED_FADE_MS / 1000, length_s / 2)
         steps = [fmt, f"atrim=duration={length_s:.3f}", f"afade=t=in:d={fade_s:.3f}",
                  f"afade=t=out:st={length_s - fade_s:.3f}:d={fade_s:.3f}",
-                 f"volume={bed['gain_db']}dB", f"adelay={bed['start_ms']}:all=1"]
+                 f"volume={bed['gain_db'] + bed.get('level_db', 0.0):.2f}dB", f"adelay={bed['start_ms']}:all=1"]
         if bed["duck"]:
             # After adelay, t is time from the start of the drama, so dialogue times apply directly.
             windows = [(a, b) for a, b in dialogue if a < bed["end_ms"] and b > bed["start_ms"]]
@@ -178,6 +228,19 @@ def measure_lufs(path, start_s=None, length_s=None):
     return float(match.group(1))
 
 
+def probe_silences(path, length_ms):
+    """Silent stretches (start_ms, end_ms) in a clip, from ffmpeg's silencedetect."""
+    result = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(path),
+                             "-af", f"silencedetect=noise={SILENCE_DB}dB:d=0.05", "-f", "null", "-"],
+                            capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"silencedetect failed on {path}: {result.stderr.strip()[-300:]}")
+    starts = [round(float(s) * 1000) for s in SILENCE_START.findall(result.stderr)]
+    ends = [round(float(e) * 1000) for e in SILENCE_END.findall(result.stderr)]
+    ends += [length_ms] * (len(starts) - len(ends))  # silence that runs to the end of the file
+    return list(zip(starts, ends))
+
+
 def require_tools():
     missing = [t for t in ("ffmpeg", "ffprobe") if shutil.which(t) is None]
     if missing:
@@ -213,7 +276,13 @@ def mix(src, out):
     bed_ms = {b["id"]: probe_ms(src / b["file"]) for b in segments["beds"]}
     flat = segments.get("flat_clip")
     flat_ms = probe_ms(src / flat["file"]) if flat else None
-    timeline = build_timeline(segments, segment_ms, bed_ms, flat_ms)
+    trims = {s["id"]: edge_trims(probe_silences(src / s["file"], segment_ms[s["id"]]), segment_ms[s["id"]])
+             for s in segments["segments"]}
+    levels = {s["id"]: level_gain_db(s["kind"], measure_lufs(src / s["file"]))
+              for s in segments["segments"] if s["kind"] in LEVEL_LUFS}
+    levels.update({b["id"]: level_gain_db(b["kind"], measure_lufs(src / b["file"]))
+                   for b in segments["beds"] if b["kind"] in LEVEL_LUFS})
+    timeline = build_timeline(segments, segment_ms, bed_ms, flat_ms, trims, levels)
 
     out.mkdir(parents=True, exist_ok=True)
     inputs, graph = filter_graph(timeline)

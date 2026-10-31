@@ -3,7 +3,8 @@ import unittest
 
 from core.interface import load_json
 from core.placeholders import DEFAULT_FIXTURE
-from web.mix import absolute_line_times, build_timeline, duck_gain_expr, filter_graph, loudness_filter
+from web.mix import (absolute_line_times, build_timeline, duck_gain_expr, edge_trims, filter_graph,
+                     level_gain_db, loudness_filter)
 
 
 def eval_gain(expr, t_s):
@@ -88,6 +89,50 @@ class LineTimesTest(unittest.TestCase):
         timeline = build_timeline(segments, {s["id"]: 1000 for s in segments["segments"]}, {"s01-amb": 1, "s02-amb": 1, "theme": 1})
         timed = [s["id"] for s in timeline["segments"] if s["line_times"]]
         self.assertEqual(timed, ["s01-d002"])
+
+
+class MixFixesTest(unittest.TestCase):
+    def test_edge_silence_is_trimmed_to_the_keep_margin(self):
+        # 600 ms silent at the start, 750 ms at the end of a 10 s clip, and a pause in the middle.
+        self.assertEqual(edge_trims([(0, 600), (4000, 4500), (9250, 10000)], 10000, keep_ms=100), (500, 650))
+
+    def test_middle_pauses_are_never_trimmed(self):
+        self.assertEqual(edge_trims([(4000, 4500)], 10000, keep_ms=100), (0, 0))
+
+    def test_an_all_silent_clip_is_left_alone(self):
+        self.assertEqual(edge_trims([(0, 1000)], 1000), (0, 0))
+
+    def test_quiet_ambience_is_raised_but_capped(self):
+        self.assertEqual(level_gain_db("ambience", -51.3), 22.3)
+        self.assertEqual(level_gain_db("ambience", -60.0), 24.0)
+
+    def test_loud_sfx_is_lowered_and_dialogue_untouched(self):
+        self.assertEqual(level_gain_db("sfx", -16.6), -1.4)
+        self.assertEqual(level_gain_db("dialogue", -30.0), 0.0)
+        self.assertEqual(level_gain_db("sfx", float("-inf")), 0.0)
+
+    def test_trimming_shortens_the_timeline_and_moves_line_times(self):
+        segments = load_json(DEFAULT_FIXTURE / "segments.json")
+        segments["segments"][2]["line_times_ms"] = [{"line_id": "s01-l004", "start_ms": 300, "end_ms": 600},
+                                                    {"line_id": "s01-l005", "start_ms": 700, "end_ms": 900}]
+        seg_ms = {s["id"]: 1000 for s in segments["segments"]}
+        beds = {"s01-amb": 1, "s02-amb": 1, "theme": 1}
+        plain = build_timeline(segments, seg_ms, beds)
+        trimmed = build_timeline(segments, seg_ms, beds, trims={"s01-d002": (200, 50)})
+        self.assertEqual(trimmed["duration_ms"], plain["duration_ms"] - 250)
+        seg = next(s for s in trimmed["segments"] if s["id"] == "s01-d002")
+        self.assertEqual(seg["end_ms"] - seg["start_ms"], 750)
+        self.assertEqual(seg["line_times"][0]["start_ms"], seg["start_ms"] + 100)
+
+    def test_graph_trims_and_levels(self):
+        segments = load_json(DEFAULT_FIXTURE / "segments.json")
+        timeline = build_timeline(segments, {s["id"]: 1000 for s in segments["segments"]},
+                                  {"s01-amb": 1, "s02-amb": 1, "theme": 1},
+                                  trims={"s01-d001": (200, 0)}, levels={"s01-x001": 3.0, "s01-amb": 10.0})
+        graph = filter_graph(timeline)[1]
+        self.assertIn("atrim=start=0.200:duration=0.800", graph)
+        self.assertIn("volume=3.0dB", graph)
+        self.assertIn("volume=-10.00dB", graph)  # s01-amb: gain_db -20 plus level 10
 
 
 class LoudnessTest(unittest.TestCase):
