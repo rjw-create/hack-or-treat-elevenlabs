@@ -167,6 +167,19 @@ class RenderTests(unittest.TestCase):
         self.assertFalse(any(str(c[1].get("inputs", [{}])[0].get("text", "")).startswith("Without, the night")
                              for c in full.calls))
 
+    def test_dialogue_context_fits_the_api_limit(self):
+        from core.render import CONTEXT_MAX_CHARS
+
+        client = FakeClient()
+        self._run(client, scenes={1})
+        dialogue = [kw for name, kw in client.calls if name == "dialogue"]
+        self.assertTrue(dialogue)
+        for kw in dialogue:
+            for field in ("previous_text", "future_text"):
+                if field in kw:
+                    self.assertLessEqual(len(kw[field]), CONTEXT_MAX_CHARS)
+                    self.assertEqual(kw[field], kw[field].strip())  # cut at a word boundary, no stray spaces
+
     def test_budget_guard_stops_before_paying(self):
         client = FakeClient(remaining=ledger.RESERVE_CREDITS + 50)
         with self.assertRaises(ledger.BudgetError):
