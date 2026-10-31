@@ -1,0 +1,4 @@
+anthropic==2.3.0
+elevenlabs==2.75.0
+pytest==9.2.0
+python-dotenv==1.2.4
