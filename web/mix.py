@@ -33,6 +33,20 @@ MP3_QUALITY = "2"  # LAME VBR quality 2, roughly 190 kbps
 TIMELINE_VERSION = 1
 
 
+def absolute_line_times(seg, start_ms, end_ms):
+    """Move Core's per-line times (relative to the stem) onto the drama's timeline.
+
+    Returns None unless every line in the segment has a time: with one line missing, the line before
+    it would stay highlighted while it is spoken, so the player highlights the whole segment instead.
+    """
+    times = {t["line_id"]: t for t in seg.get("line_times_ms") or []}
+    line_ids = seg.get("line_ids") or []
+    if not line_ids or any(i not in times for i in line_ids):
+        return None
+    return [{"line_id": i, "start_ms": min(start_ms + times[i]["start_ms"], end_ms),
+             "end_ms": min(start_ms + times[i]["end_ms"], end_ms)} for i in line_ids]
+
+
 def build_timeline(segments, segment_ms, bed_ms, flat_ms=None):
     """Work out where every segment, bed and chapter lands, in ms from the start of the drama.
 
@@ -45,7 +59,7 @@ def build_timeline(segments, segment_ms, bed_ms, flat_ms=None):
         end_ms = t_ms + segment_ms[seg["id"]]
         placed.append({"id": seg["id"], "kind": seg["kind"], "scene": seg["scene"], "file": seg["file"],
                        "start_ms": t_ms, "end_ms": end_ms, "line_ids": seg.get("line_ids", []),
-                       "cue": seg.get("cue")})
+                       "line_times": absolute_line_times(seg, t_ms, end_ms), "cue": seg.get("cue")})
         t_ms = end_ms + seg["gap_after_ms"]
     by_id = {s["id"]: s for s in placed}
 
