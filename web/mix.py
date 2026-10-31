@@ -15,6 +15,8 @@ lines as the flat clip, for Proof's A/B listener test.
 """
 import argparse
 import json
+import math
+import re
 import shutil
 import subprocess
 import sys
@@ -30,6 +32,12 @@ BED_FADE_MS = 800  # beds fade at the edges of their span instead of cutting off
 EXCERPT_FADE_MS = 300  # the A/B excerpt stops mid-ambience, so fade it rather than click
 LIMIT_FRACTION = 0.89  # about -1 dBFS peak, so the MP3 encoder never clips
 MP3_QUALITY = "2"  # LAME VBR quality 2, roughly 190 kbps
+TARGET_LUFS = -16.0  # integrated loudness of every published file (Jackson, 2026-10-31)
+# About -1.5 dBFS sample peak: true peaks between samples and MP3 encoding add a little, and the
+# published files should stay under -1 dBTP.
+CEILING_FRACTION = 0.84
+SILENT_LUFS = -70.0  # below this a file is effectively silent; raising it would only raise noise
+INPUT_LUFS = re.compile(r'"input_i"\s*:\s*"([^"]+)"')
 TIMELINE_VERSION = 1
 
 
@@ -144,6 +152,32 @@ def filter_graph(timeline):
     return inputs, ";\n".join(chains)
 
 
+def loudness_filter(measured_lufs, target_lufs=TARGET_LUFS):
+    """Fixed gain to the target, then a limiter so the gain cannot push peaks over the ceiling.
+
+    A fixed gain keeps the drama's dynamics as mixed; ffmpeg's loudnorm would switch to dynamic
+    compression whenever the gain needs more headroom than the file has, as it does here.
+    """
+    if not math.isfinite(measured_lufs) or measured_lufs < SILENT_LUFS:
+        gain_db = 0.0
+    else:
+        gain_db = target_lufs - measured_lufs
+    return f"volume={gain_db:.2f}dB,alimiter=limit={CEILING_FRACTION}:level=0:latency=1"
+
+
+def measure_lufs(path, start_s=None, length_s=None):
+    """Integrated loudness (LUFS) of a file, or of one stretch of it, using ffmpeg's loudnorm meter."""
+    window = ["-ss", f"{start_s:.3f}", "-t", f"{length_s:.3f}"] if start_s is not None else []
+    result = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", *window, "-i", str(path),
+                             "-af", "loudnorm=print_format=json", "-f", "null", "-"],
+                            capture_output=True, text=True)
+    # loudnorm prints a JSON block, but ffmpeg's own summary follows it, so pick out the one value.
+    match = INPUT_LUFS.search(result.stderr)
+    if result.returncode != 0 or not match:
+        raise RuntimeError(f"could not measure loudness of {path}: {result.stderr.strip()[-300:]}")
+    return float(match.group(1))
+
+
 def require_tools():
     missing = [t for t in ("ffmpeg", "ffprobe") if shutil.which(t) is None]
     if missing:
@@ -197,17 +231,22 @@ def mix(src, out):
         # excerpt is not an MP3 cut from an MP3 (a second encode would make the listener test unfair).
         master = Path(tmp) / "master.wav"
         run_ffmpeg([*args, "-/filter_complex", str(graph_file), "-map", "[out]", str(master)])
-        run_ffmpeg(["-i", str(master), *mp3, str(out / timeline["file"])])
+        # Every published file is brought to TARGET_LUFS on its own, so the A/B pair plays equally loud.
+        run_ffmpeg(["-i", str(master), "-af", loudness_filter(measure_lufs(master)), *mp3,
+                    str(out / timeline["file"])])
         compare = timeline["compare"]
         if compare:
+            start_s = compare["full_start_ms"] / 1000
             length_s = (compare["full_end_ms"] - compare["full_start_ms"]) / 1000
             fade_s = min(EXCERPT_FADE_MS / 1000, length_s / 2)
-            run_ffmpeg(["-ss", f"{compare['full_start_ms'] / 1000:.3f}", "-t", f"{length_s:.3f}",
-                        "-i", str(master), "-af", f"afade=t=out:st={length_s - fade_s:.3f}:d={fade_s:.3f}",
+            level = loudness_filter(measure_lufs(master, start_s, length_s))
+            run_ffmpeg(["-ss", f"{start_s:.3f}", "-t", f"{length_s:.3f}", "-i", str(master),
+                        "-af", f"{level},afade=t=out:st={length_s - fade_s:.3f}:d={fade_s:.3f}",
                         *mp3, str(out / compare["excerpt_file"])])
     if flat:
-        run_ffmpeg(["-i", str(src / flat["file"]), "-ar", str(SAMPLE_RATE_HZ), "-ac", "2", *mp3,
-                    str(out / "flat.mp3")])
+        flat_src = src / flat["file"]
+        run_ffmpeg(["-i", str(flat_src), "-af", loudness_filter(measure_lufs(flat_src)),
+                    "-ar", str(SAMPLE_RATE_HZ), "-ac", "2", *mp3, str(out / "flat.mp3")])
 
     shutil.copyfile(src / "script.json", out / "script.json")
     (out / "timeline.json").write_text(json.dumps(timeline, indent=2), encoding="utf-8")

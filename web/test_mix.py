@@ -3,7 +3,7 @@ import unittest
 
 from core.interface import load_json
 from core.placeholders import DEFAULT_FIXTURE
-from web.mix import absolute_line_times, build_timeline, duck_gain_expr, filter_graph
+from web.mix import absolute_line_times, build_timeline, duck_gain_expr, filter_graph, loudness_filter
 
 
 def eval_gain(expr, t_s):
@@ -88,6 +88,21 @@ class LineTimesTest(unittest.TestCase):
         timeline = build_timeline(segments, {s["id"]: 1000 for s in segments["segments"]}, {"s01-amb": 1, "s02-amb": 1, "theme": 1})
         timed = [s["id"] for s in timeline["segments"] if s["line_times"]]
         self.assertEqual(timed, ["s01-d002"])
+
+
+class LoudnessTest(unittest.TestCase):
+    def test_quiet_mix_is_raised_by_the_difference(self):
+        self.assertTrue(loudness_filter(-23.8, target_lufs=-16.0).startswith("volume=7.80dB,"))
+
+    def test_loud_file_is_lowered(self):
+        self.assertTrue(loudness_filter(-12.5, target_lufs=-16.0).startswith("volume=-3.50dB,"))
+
+    def test_silence_is_not_boosted(self):
+        self.assertTrue(loudness_filter(float("-inf")).startswith("volume=0.00dB,"))
+        self.assertTrue(loudness_filter(-75.0).startswith("volume=0.00dB,"))
+
+    def test_limiter_always_follows_the_gain(self):
+        self.assertIn("alimiter=limit=", loudness_filter(-30.0))
 
 
 class DuckTest(unittest.TestCase):
