@@ -8,7 +8,7 @@ Before recording:
 - Serve it: `python -m web.serve`, open http://127.0.0.1:8000/web/?mix=real
 - Browser at a normal desktop width, zoom 125% so the script is readable in the video.
 - System audio captured; voiceover recorded separately and kept quieter than the drama.
-- Resolve every `[CHECK: ...]` below before recording.
+- Or record the live page instead of a local server: https://rjw-create.github.io/hack-or-treat-elevenlabs/demo/
 
 | Time | On screen | Voiceover |
 | --- | --- | --- |
@@ -17,7 +17,7 @@ Before recording:
 | 0:35-0:50 | Let it play. Point at the highlighted line moving down the script. | "The script follows along, one line at a time, using the line timings ElevenLabs returns with the dialogue." |
 | 0:50-1:20 | Click the chapter for scene 3, **The knocking** (chapter titles come from Core's `segments.json`; scene titles are "The paw", "The visitor", "The knocking"). Let the knocking play. | "Full Cast took a 1902 short story and made a five-and-a-half-minute radio drama from it: three scenes, six voices. ElevenLabs Text to Dialogue voices the scenes, several lines per request, so the speakers react to each other. Sound effects and ambience come from short text cues." |
 | 1:20-1:45 | Cut to `docs/2026-10-31-interface.md` scrolled to `segments.json`, then back to the player. | "The pieces are planned as data: which clips play in what order, with what pause, and what sits underneath. The mixer measures each clip, lays them end to end, and lowers the drone when someone speaks." |
-| 1:45-2:05 | The ElevenLabs account usage page, credits used visible. | "We had ten thousand credits. That is why this is an abridged version, not the whole story. We used about seven thousand three hundred, and every clip is cached so nothing is paid for twice." `[CHECK: confirm the total on the ElevenLabs account page; show the account page, not evals.credits, on screen]` |
+| 1:45-2:05 | The ElevenLabs account usage page, credits used visible. | "We had ten thousand credits. That is why this is an abridged version, not the whole story. We used about seven thousand three hundred, and every clip is cached so nothing is paid for twice." |
 | 2:05-2:20 | Back to the player, Part I. Toggle **Before**, then **After**, on one line of dialogue. | "One voice. Full cast." |
 | 2:20-2:30 | Title and byline on screen. | "Full Cast. The Monkey's Paw by W. W. Jacobs, public domain. Voices and sound by ElevenLabs." |
 

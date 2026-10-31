@@ -9,6 +9,9 @@ The story is **The Monkey's Paw** by W. W. Jacobs (first published 1902), abridg
 
 Entry for Hack or Treat (2026-10-31), category **Best Project Built With ElevenLabs**.
 
+**Listen:** https://rjw-create.github.io/hack-or-treat-elevenlabs/demo/ (the player with the final mix,
+published from [`docs/demo/`](docs/demo/); it is a copy of `web/` plus the mixed audio).
+
 ## What it does
 1. **Adapt.** The story is cut down to a short script: three scenes ("The paw", "The visitor",
    "The knocking"), 49 lines and six speaking parts. Lines carry ElevenLabs audio tags such as
@@ -67,11 +70,11 @@ and the estimated credits without spending any).
   for re-renders. Dialogue costs credits per character of text, so the budget sets the length.
 - That is why the drama is **abridged to 5 minutes 28 seconds**. It is not the full story: scenes are
   shortened and some description is cut. The original is short and worth reading.
-- **Credits used: 7,280 of 10,000**, including the scene previews and re-renders, by Core's reading of
-  the account balance. The per-call log tells a different story: `python -m evals.credits` sums it to
-  14,687, but only 3 of its 30 paid calls have a measured cost and the other 27 are estimates, so it
-  is not a reliable total. The two figures have not been reconciled; the account page is the
-  authority.
+- **Credits used: 7,280 of 10,000** per the account balance (read 2026-10-31 14:57 EDT), previews and
+  re-renders included. Dialogue costs 1 credit per character and sound effects about 100 each: the
+  log shows 6,080 paid characters of dialogue and flat narration plus 11 sound-effect calls, which
+  adds up to the balance. Don't total the per-call rows in `usage.jsonl` (or `python -m evals.credits`)
+  for this: most rows are estimates, and the balance updates late.
 - Finished length: **5:28** (328.4 s, from the mixer's `timeline.json`), 49 lines in 3 scenes.
 
 ## Checking the result

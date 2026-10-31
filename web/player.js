@@ -7,7 +7,9 @@
 const MIX_NAME = /^[a-z0-9-]+$/;  // the name becomes part of a URL path, so only allow plain names
 const requested = new URLSearchParams(location.search).get("mix") || "";
 const mixName = MIX_NAME.test(requested) ? requested : "placeholder";
-const base = `../output/mix/${mixName}/`;
+// A published copy (GitHub Pages) keeps its files beside the page and says so with data-mix-base.
+const publishedBase = document.body.dataset.mixBase;
+const base = publishedBase || `../output/mix/${mixName}/`;
 
 const audio = document.getElementById("audio");
 const scriptEl = document.getElementById("script");
@@ -203,20 +205,21 @@ function setMode(next, fullMs) {
 async function load() {
   statusEl.textContent = "Loading the drama...";
   const src = mixName === "real" ? "../elevenlabs-shared/output" : `output/${mixName}`;
-  const command = `python -m web.mix --src ${src} --out output/mix/${mixName}`;
+  // Local hints only make sense on a developer's machine, not on the published page.
+  const command = publishedBase ? null : `python -m web.mix --src ${src} --out output/mix/${mixName}`;
+  const where = publishedBase ? "the demo files" : `output/mix/${mixName}/`;
   let script;
   try {
     const [t, s] = await Promise.all([
       fetch(base + "timeline.json"), fetch(base + "script.json"),
     ]);
     if (!t.ok || !s.ok) {
-      showError(`No mix found in output/mix/${mixName}/.`, command);
+      showError(`No mix found in ${where}.`, command);
       return;
     }
     [timeline, script] = await Promise.all([t.json(), s.json()]);
   } catch (err) {
-    showError(`Could not load output/mix/${mixName}/ (${err.message}). Is the page served over http?`,
-              "python -m web.serve");
+    showError(`Could not load ${where} (${err.message}).`, publishedBase ? null : "python -m web.serve");
     return;
   }
 
@@ -224,7 +227,7 @@ async function load() {
   document.getElementById("title").textContent = script.title;
   document.getElementById("byline").textContent =
     `by ${script.author}, ${formatTime(timeline.duration_ms)} audio drama`;
-  statusEl.textContent = mixName === "placeholder"
+  statusEl.textContent = !publishedBase && mixName === "placeholder"
     ? "Placeholder audio: tones stand in for voices until the real stems are rendered."
     : "";
 
