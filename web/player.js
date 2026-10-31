@@ -19,10 +19,12 @@ const fullButton = document.getElementById("mode-full");
 
 let timeline = null;
 let mode = "full";
-let currentSegment = -1;
+let currentKey = null;  // which segment or line is lit, so the DOM only changes when it moves on
+let currentNodes = [];
 let fullNote = "";
 const FLAT_NOTE = "The same lines read by one voice, with no sound design.";
 const elementsBySegment = [];  // segment index -> the line/cue elements it speaks
+const lineElements = new Map();  // line id -> its element, for per-line highlighting
 const chapterButtons = [];
 
 // Same rule as core.interface.strip_tags: drop every [tag], collapse spaces.
@@ -88,17 +90,18 @@ function renderScript(script) {
         button.type = "button";
         button.append(el("span", "speaker", names.get(line.speaker) || line.speaker),
                       el("span", "text", stripTags(line.text)));
+        const timed = seg.line_times && seg.line_times.find((t) => t.line_id === id);
+        button.addEventListener("click", () => seekFull(timed ? timed.start_ms : seg.start_ms));
+        lineElements.set(id, button);
         nodes.push(button);
       }
     } else {
       const cue = el("button", "cue outside", `Sound: ${seg.cue}`);
       cue.type = "button";
+      cue.addEventListener("click", () => seekFull(seg.start_ms));
       nodes.push(cue);
     }
-    for (const node of nodes) {
-      node.addEventListener("click", () => seekFull(seg.start_ms));
-      scriptEl.append(node);
-    }
+    scriptEl.append(...nodes);
     elementsBySegment[i] = nodes;
   });
 }
@@ -125,15 +128,30 @@ function segmentAt(ms) {
   return found;
 }
 
+// One line when the segment has per-line times from Core, otherwise every line in the segment.
+function nodesAt(ms) {
+  const index = segmentAt(ms);
+  const seg = timeline.segments[index];
+  if (!seg) return { key: null, nodes: [] };
+  if (seg.line_times) {
+    // Between two lines the one just spoken stays lit; before the first starts, the first is lit.
+    let line = seg.line_times[0];
+    for (const t of seg.line_times) if (t.start_ms <= ms) line = t;
+    return { key: line.line_id, nodes: [lineElements.get(line.line_id)] };
+  }
+  return { key: `segment-${index}`, nodes: elementsBySegment[index] || [] };
+}
+
 function highlight() {
   if (mode !== "full") return;
   const ms = audio.currentTime * 1000;
-  const index = segmentAt(ms);
-  if (index !== currentSegment) {
-    (elementsBySegment[currentSegment] || []).forEach((n) => n.classList.remove("current"));
-    (elementsBySegment[index] || []).forEach((n) => n.classList.add("current"));
-    currentSegment = index;
-    const first = (elementsBySegment[index] || [])[0];
+  const { key, nodes } = nodesAt(ms);
+  if (key !== currentKey) {
+    currentNodes.forEach((n) => n.classList.remove("current"));
+    nodes.forEach((n) => n.classList.add("current"));
+    currentKey = key;
+    currentNodes = nodes;
+    const first = nodes[0];
     if (first && !audio.paused) {
       const smooth = !matchMedia("(prefers-reduced-motion: reduce)").matches;
       first.scrollIntoView({ block: "center", behavior: smooth ? "smooth" : "auto" });
@@ -145,8 +163,9 @@ function highlight() {
 }
 
 function clearHighlight() {
-  (elementsBySegment[currentSegment] || []).forEach((n) => n.classList.remove("current"));
-  currentSegment = -1;
+  currentNodes.forEach((n) => n.classList.remove("current"));
+  currentKey = null;
+  currentNodes = [];
 }
 
 // Switching keeps roughly the same moment: the position is scaled between the flat clip and the
