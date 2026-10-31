@@ -1,4 +1,5 @@
-"""Coverage check: every script line is spoken exactly once, in order, and every stem file exists.
+"""Coverage check: every script line is spoken exactly once, in order, every sfx_after cue is followed
+by an sfx segment, and every stem file exists.
 
 core.interface checks the same rule but reports one combined error; this names each missing,
 repeated, unknown or out-of-order line, so a broken render is quick to trace.
@@ -28,6 +29,27 @@ def check_lines(script, segments):
     known = [i for i in spoken if i in position]
     problems += [f"line {b} plays after {a} but comes before it in the script"
                  for a, b in zip(known, known[1:]) if position[b] < position[a]]
+    return problems
+
+
+def check_sfx_after(script, segments):
+    """A line with sfx_after must end its dialogue segment, and the next segment must be an sfx.
+
+    Segments play one after another without overlapping, so that is the only way the effect can play
+    right after the line (interface doc, script.json, sfx_after).
+    """
+    segs = segments["segments"]
+    where = {line_id: n for n, seg in enumerate(segs) if seg.get("kind") == "dialogue"
+             for line_id in seg.get("line_ids", [])}
+    problems = []
+    for line_id, (_, line) in script_lines(script).items():
+        if "sfx_after" not in line or line_id not in where:
+            continue  # lines missing from every segment are already reported by check_lines
+        n = where[line_id]
+        if segs[n]["line_ids"][-1] != line_id:
+            problems.append(f"line {line_id} has sfx_after but is not the last line of segment {segs[n]['id']}")
+        elif n + 1 >= len(segs) or segs[n + 1].get("kind") != "sfx":
+            problems.append(f"line {line_id} has sfx_after but segment {segs[n]['id']} is not followed by an sfx segment")
     return problems
 
 
@@ -66,7 +88,7 @@ def main(argv):
     except (OSError, ValueError) as e:
         print(f"ERROR {e}", file=sys.stderr)
         return 1
-    problems = check_lines(script, segments) + check_stems(folder, segments)
+    problems = check_lines(script, segments) + check_sfx_after(script, segments) + check_stems(folder, segments)
     for p in problems:
         print(f"ERROR {p}", file=sys.stderr)
     if problems:
