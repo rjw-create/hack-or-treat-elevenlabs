@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Full Cast</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%232F6FEB'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="player.css">
+</head>
+<body>
+  <header class="bar">
+    <div class="wrap">
+      <p class="eyebrow">Full Cast</p>
+      <h1 id="title">Loading...</h1>
+      <p id="byline" class="muted"></p>
+      <div class="toggle" role="group" aria-label="Version">
+        <button type="button" id="mode-flat" aria-pressed="false">Before: one voice</button>
+        <button type="button" id="mode-full" aria-pressed="true">After: full cast</button>
+      </div>
+      <audio id="audio" controls preload="metadata"></audio>
+      <p id="mode-note" class="muted small"></p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <p id="status" role="status"></p>
+    <nav id="chapters-nav" aria-labelledby="chapters-heading" hidden>
+      <h2 id="chapters-heading">Chapters</h2>
+      <ol id="chapters"></ol>
+    </nav>
+    <section aria-labelledby="script-heading">
+      <h2 id="script-heading" hidden>Script</h2>
+      <div id="script"></div>
+    </section>
+  </main>
+
+  <script src="player.js"></script>
+</body>
+</html>

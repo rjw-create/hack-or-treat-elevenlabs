@@ -48,6 +48,10 @@ class TimelineTest(unittest.TestCase):
         compare = self.timeline["compare"]
         self.assertEqual(compare["full_start_ms"], self.by_id["s01-d001"]["start_ms"])
         self.assertEqual(compare["full_end_ms"], self.by_id["s01-d002"]["end_ms"])
+        self.assertEqual(compare["excerpt_file"], "excerpt.mp3")
+
+    def test_no_compare_without_a_flat_clip(self):
+        self.assertIsNone(build_timeline(self.segments, self.segment_ms, self.bed_ms)["compare"])
 
     def test_graph_has_one_input_per_stem_and_ducks_only_ducked_beds(self):
         inputs, graph = filter_graph(self.timeline)
