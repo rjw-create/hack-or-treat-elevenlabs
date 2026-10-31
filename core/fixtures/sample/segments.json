@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "segments": [
+    {"id": "s01-d001", "scene": 1, "kind": "dialogue", "file": "stems/dialogue/s01-d001.wav",
+     "line_ids": ["s01-l001", "s01-l002", "s01-l003"], "gap_after_ms": 400},
+    {"id": "s01-x001", "scene": 1, "kind": "sfx", "file": "stems/sfx/s01-x001.wav",
+     "cue": "a log shifts and crackles in the fireplace", "gap_after_ms": 300},
+    {"id": "s01-d002", "scene": 1, "kind": "dialogue", "file": "stems/dialogue/s01-d002.wav",
+     "line_ids": ["s01-l004", "s01-l005"], "gap_after_ms": 1200},
+    {"id": "s02-d001", "scene": 2, "kind": "dialogue", "file": "stems/dialogue/s02-d001.wav",
+     "line_ids": ["s02-l001"], "gap_after_ms": 300},
+    {"id": "s02-x001", "scene": 2, "kind": "sfx", "file": "stems/sfx/s02-x001.wav",
+     "cue": "three slow knocks on a wooden front door", "gap_after_ms": 500},
+    {"id": "s02-d002", "scene": 2, "kind": "dialogue", "file": "stems/dialogue/s02-d002.wav",
+     "line_ids": ["s02-l002", "s02-l003"], "gap_after_ms": 0}
+  ],
+  "beds": [
+    {"id": "s01-amb", "kind": "ambience", "file": "stems/beds/s01-amb.wav",
+     "from_segment": "s01-d001", "to_segment": "s01-d002", "gain_db": -20, "loop": true,
+     "duck_under_dialogue": false},
+    {"id": "s02-amb", "kind": "ambience", "file": "stems/beds/s02-amb.wav",
+     "from_segment": "s02-d001", "to_segment": "s02-d002", "gain_db": -22, "loop": true,
+     "duck_under_dialogue": false},
+    {"id": "theme", "kind": "music", "file": "stems/beds/theme.wav",
+     "from_segment": "s01-d001", "to_segment": "s01-d001", "gain_db": -14, "loop": false,
+     "duck_under_dialogue": true}
+  ],
+  "chapters": [
+    {"title": "Part I: The paw", "starts_at_segment": "s01-d001"},
+    {"title": "Part II: The visitor", "starts_at_segment": "s02-d001"}
+  ],
+  "flat_clip": {"file": "stems/flat/flat.wav", "voice": "narrator",
+                "line_ids": ["s01-l001", "s01-l002", "s01-l003", "s01-l004", "s01-l005"]}
+}
