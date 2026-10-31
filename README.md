@@ -13,9 +13,12 @@ Entry for Hack or Treat (2026-10-31), category **Best Project Built With ElevenL
 > left blank on purpose until they are measured.
 
 ## What it does
-1. **Adapt.** The story is cut down to a ~5-minute script with six speaking parts. Lines carry
-   ElevenLabs audio tags such as `[whispers]` for delivery. The adaptation was written with Claude Code
-   during the hackathon session and then checked by hand, not generated through an API call at run time.
+1. **Adapt.** The story is cut down to a ~5-minute script: three scenes ("The paw", "The visitor",
+   "The knocking"), 49 lines and six speaking parts. Lines carry ElevenLabs audio tags such as
+   `[whispers]` for delivery. The adaptation was written with Claude Code during the hackathon session
+   and then checked by hand, not generated through an API call at run time. It is in
+   [`core/adaptation/script.json`](core/adaptation/script.json); the source text is in
+   [`core/texts/`](core/texts/).
 2. **Cast.** Each character gets one ElevenLabs voice: a library voice or one made with Voice Design
    from a short written description. No voice is cloned from a real person.
 3. **Render.** Dialogue is generated with ElevenLabs Text to Dialogue, several lines per request, so

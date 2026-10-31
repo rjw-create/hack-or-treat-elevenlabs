@@ -11,8 +11,8 @@ A public-domain ghost story turned into a five-minute audio drama with a full vo
 effects and music, and a player that lets you switch between a plain audiobook and the full cast.
 
 ## What it does
-Full Cast adapts "The Monkey's Paw" (W. W. Jacobs, 1902) into a short radio-style drama. Each of the six
-characters has their own ElevenLabs voice, scenes are voiced with Text to Dialogue so the speakers react
+Full Cast adapts "The Monkey's Paw" (W. W. Jacobs, 1902) into a short radio-style drama in three
+scenes and 49 lines. Each of the six characters has their own ElevenLabs voice, scenes are voiced with Text to Dialogue so the speakers react
 to each other, and sound effects and ambience are generated from short text cues. A mixer places every
 clip in order, loops ambience under each scene and lowers the music while people speak. The player
 shows the script following along, has a chapter list, and has a before/after toggle that jumps between
