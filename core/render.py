@@ -105,12 +105,30 @@ def build_items(script, voices, plan):
     return items
 
 
+RATE_LIMIT_RETRIES = 3
+RATE_LIMIT_WAIT_S = 3
+
+
+def _with_retry(fn, sleep=None):
+    """Call fn, waiting and retrying on 429 (rate limited, seen on the first full run)."""
+    import time
+
+    sleep = sleep or time.sleep
+    for attempt in range(RATE_LIMIT_RETRIES + 1):
+        try:
+            return fn()
+        except Exception as e:
+            if getattr(e, "status_code", None) != 429 or attempt == RATE_LIMIT_RETRIES:
+                raise
+            sleep(RATE_LIMIT_WAIT_S * (attempt + 1))
+
+
 def _balance(client):
-    s = client.user.subscription.get()
+    s = _with_retry(client.user.subscription.get, getattr(client, "sleep", None))
     return s.character_count, s.character_limit - s.character_count
 
 
-BALANCE_SETTLE_TRIES = 5  # the balance can lag a call by a few seconds (seen on the first real run)
+BALANCE_SETTLE_TRIES = 2  # the balance can lag a call by a few seconds (seen on the first real run)
 
 
 def _settled_usage(client, used_before, sleep=None):
@@ -119,7 +137,12 @@ def _settled_usage(client, used_before, sleep=None):
     sleep = sleep or time.sleep
     used = used_before
     for _ in range(BALANCE_SETTLE_TRIES):
-        used, _ = _balance(client)
+        try:
+            used, _ = _balance(client)
+        except Exception as e:
+            if getattr(e, "status_code", None) == 429:
+                return used_before  # cost stays unmeasured; the next call's balance read catches up
+            raise
         if used > used_before:
             break
         sleep(1)
@@ -169,7 +192,7 @@ def run(client, script, voices, out_root, scenes=None, dry_run=False, log=print)
             # The hackathon account started at 0, so its usage is the real spend; the log total
             # (estimates where a cost could not be measured) is only the fallback.
             ledger.check_budget(used_before, est, remaining)
-            audio, meta = it.call(client)
+            audio, meta = _with_retry(lambda: it.call(client), getattr(client, "sleep", None))
             used_after = _settled_usage(client, used_before, sleep=getattr(client, "sleep", None))
             actual = used_after - used_before if used_after > used_before else None
             cache.store(key, audio, meta)
