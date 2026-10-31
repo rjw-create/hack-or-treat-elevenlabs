@@ -58,6 +58,17 @@ def main(argv):
     p_run.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
 
+    try:
+        return _dispatch(args)
+    except Exception as e:
+        # A rejected key otherwise ends in a long SDK traceback; say what it means in one line.
+        if getattr(e, "status_code", None) == 401:
+            print("STOP: ElevenLabs rejected the API key in .env (401). Jackson needs to replace it.")
+            return 1
+        raise
+
+
+def _dispatch(args):
     script = load_json(ADAPTATION_DIR / "script.json")
     out_root = output_dir()
     if args.command == "step0":
