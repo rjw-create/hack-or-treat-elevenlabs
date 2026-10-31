@@ -45,6 +45,31 @@ class Coverage(unittest.TestCase):
         problems = coverage.check_lines(self.script, segs)
         self.assertIn("line s01-l001 plays after s01-l002 but comes before it in the script", problems)
 
+    def with_sfx_after(self, line_id):
+        script = copy.deepcopy(self.script)
+        for scene in script["scenes"]:
+            for line in scene["lines"]:
+                if line["id"] == line_id:
+                    line["sfx_after"] = "a log shifts in the fireplace"
+        return script
+
+    def test_sfx_after_followed_by_sfx_passes(self):
+        # In the sample, s01-l003 ends segment s01-d001, which is followed by sfx s01-x001.
+        self.assertEqual(coverage.check_sfx_after(self.with_sfx_after("s01-l003"), self.segments), [])
+
+    def test_sfx_after_mid_segment_is_reported(self):
+        problems = coverage.check_sfx_after(self.with_sfx_after("s01-l002"), self.segments)
+        self.assertEqual(problems, ["line s01-l002 has sfx_after but is not the last line of segment s01-d001"])
+
+    def test_sfx_after_without_following_sfx_is_reported(self):
+        # s01-l005 ends s01-d002, which is followed by dialogue s02-d001.
+        problems = coverage.check_sfx_after(self.with_sfx_after("s01-l005"), self.segments)
+        self.assertEqual(problems, ["line s01-l005 has sfx_after but segment s01-d002 is not followed by an sfx segment"])
+
+    def test_sfx_after_on_the_final_line_is_reported(self):
+        problems = coverage.check_sfx_after(self.with_sfx_after("s02-l003"), self.segments)
+        self.assertEqual(len(problems), 1)
+
     def test_missing_and_empty_stems(self):
         segs = self.edited()
         segs["segments"][0]["file"] = "stems/dialogue/nope.wav"
