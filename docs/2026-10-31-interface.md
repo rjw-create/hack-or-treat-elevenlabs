@@ -130,8 +130,28 @@ One JSON object per line, appended for every ElevenLabs call, including cache hi
   and are logged as `sfx` (their `item_id` is the bed id, e.g. `s01-amb`).
 - `output` is relative to the folder holding `usage.jsonl`. A one-scene preview writes its stems under
   `preview-s01/`, so its rows read e.g. `preview-s01/stems/dialogue/s01-d001.mp3`.
-- Core also keeps `pricing.json` next to `usage.jsonl`: the dialogue rate per character and the
-  per-call SFX, ambience and music prices, each marked as assumed or measured.
+- Core also keeps `pricing.json` next to `usage.jsonl` (layout below).
+
+## pricing.json (prices Core estimates with)
+```json
+{
+  "dialogue_credits_per_char": 1.0,
+  "dialogue_basis": "assumed (1 credit per character x model multiplier)",
+  "sfx_credits_per_call": 120,
+  "ambience_credits_per_call": 240,
+  "music_credits_per_call": 800
+}
+```
+- `dialogue_credits_per_char` applies to `dialogue` and `flat` rows. Its `dialogue_basis` is either
+  `"assumed (1 credit per character x model multiplier)"`, written by `step0` from the model's
+  `character_cost_multiplier`, or `"measured"` once a dialogue call's balance change has been recorded.
+- `sfx_credits_per_call`, `ambience_credits_per_call` and `music_credits_per_call` exist **only once
+  measured** from the account balance before and after a real call, so they are always measured.
+  A missing key means the price is still unknown. (Ambience calls are logged as `sfx` in usage.jsonl
+  but priced under their own key, since a looping 20-second bed can cost differently from a short effect.)
+- Measured values only go up: a later, lower reading never replaces a higher one, so estimates stay
+  on the safe side.
+- The numbers in the example are made up; read the real file.
 - `credits_estimated` comes from Core's budget rules. `credits_actual` is filled only when Core can
   measure it (balance read before and after a call); otherwise it is `null`. Proof should report which
   of the two each number is based on.
