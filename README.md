@@ -27,7 +27,9 @@ Entry for Hack or Treat (2026-10-31), category **Best Project Built With ElevenL
    paid for twice.
 4. **Mix.** `web/mix.py` measures every clip, places them in order with their pauses, loops the
    ambience under each scene, lowers the music while people talk, and writes one MP3.
-5. **Play.** `web/index.html` plays the drama with the script highlighted as it goes, a chapter list,
+5. **Play.** `web/index.html` plays the drama with the script highlighted as it goes: the line being
+   spoken when ElevenLabs returns per-line timing with the dialogue, otherwise the few lines of the
+   current clip (`[TBD: confirm which on the real render]`). It also has a chapter list
    and the before/after toggle.
 
 How the parts talk to each other is written down in [`docs/2026-10-31-interface.md`](docs/2026-10-31-interface.md).
