@@ -12,7 +12,7 @@ from typing import Callable
 from core import cache, ledger
 from core.config import DIALOGUE_MODEL_ID, OUTPUT_FORMAT
 from core.interface import check_folder, script_lines, strip_tags
-from core.plan import AMBIENCE_LENGTH_S, MUSIC_LENGTH_MS, build_segments, scene_subset
+from core.plan import AMBIENCE_LENGTH_S, build_segments, scene_subset
 
 
 @dataclass
@@ -25,6 +25,22 @@ class Item:
     params: dict
     out_file: str
     call: Callable  # call(client) -> (audio bytes, meta dict)
+
+
+# The API rejects longer context (422 string_too_long on future_text, found on the first real call);
+# previous_text gets the same cap to be safe.
+CONTEXT_MAX_CHARS = 100
+
+
+def _context(text, from_end):
+    """Up to CONTEXT_MAX_CHARS of text, cut at a word boundary: the tail if from_end, else the head."""
+    if len(text) <= CONTEXT_MAX_CHARS:
+        return text
+    if from_end:
+        tail = text[-CONTEXT_MAX_CHARS:]
+        return tail.split(" ", 1)[1] if " " in tail else tail
+    head = text[:CONTEXT_MAX_CHARS + 1]
+    return head.rsplit(" ", 1)[0] if " " in head else text[:CONTEXT_MAX_CHARS]
 
 
 def _join(chunks):
@@ -57,7 +73,8 @@ def build_items(script, voices, plan):
                          if i + 1 < len(dialogue) else None)
             inputs = [{"text": lines[l]["text"], "voice_id": voice_of[lines[l]["speaker"]]} for l in seg["line_ids"]]
             params = {"inputs": inputs, "model_id": DIALOGUE_MODEL_ID, "output_format": OUTPUT_FORMAT,
-                      "previous_text": prev_text, "future_text": next_text}
+                      "previous_text": prev_text and _context(prev_text, from_end=True),
+                      "future_text": next_text and _context(next_text, from_end=False)}
             params = {k: v for k, v in params.items() if v is not None}
             items.append(Item(seg["id"], "dialogue", "dialogue", "text-to-dialogue",
                               sum(len(x["text"]) for x in inputs), params, seg["file"], _dialogue_call(params)))
@@ -72,10 +89,12 @@ def build_items(script, voices, plan):
             items.append(Item(bed["id"], "sfx", "ambience", "sound-generation", len(params["text"]), params,
                               bed["file"], lambda c, p=params: (_join(c.text_to_sound_effects.convert(**p)), {})))
         else:
-            params = {"prompt": f"Instrumental underscore for a Victorian horror radio drama. {bed['prompt']}.",
-                      "music_length_ms": MUSIC_LENGTH_MS, "force_instrumental": True, "output_format": OUTPUT_FORMAT}
-            items.append(Item(bed["id"], "music", "music", "music", len(params["prompt"]), params, bed["file"],
-                              lambda c, p=params: (_join(c.music.compose(**p)), {})))
+            # The Music API returns 402 on the free plan, so the theme is a looping musical drone
+            # made with the sound-effects endpoint, logged honestly as an sfx call.
+            params = {"text": f"Slow ominous orchestral string drone, Victorian horror underscore, {bed['prompt']}",
+                      "loop": True, "duration_seconds": AMBIENCE_LENGTH_S, "output_format": OUTPUT_FORMAT}
+            items.append(Item(bed["id"], "sfx", "ambience", "sound-generation", len(params["text"]), params,
+                              bed["file"], lambda c, p=params: (_join(c.text_to_sound_effects.convert(**p)), {})))
     flat = plan.get("flat_clip")
     if flat:
         text = " ".join(strip_tags(lines[l]["text"]) for l in flat["line_ids"])
@@ -89,6 +108,22 @@ def build_items(script, voices, plan):
 def _balance(client):
     s = client.user.subscription.get()
     return s.character_count, s.character_limit - s.character_count
+
+
+BALANCE_SETTLE_TRIES = 5  # the balance can lag a call by a few seconds (seen on the first real run)
+
+
+def _settled_usage(client, used_before, sleep=None):
+    import time
+
+    sleep = sleep or time.sleep
+    used = used_before
+    for _ in range(BALANCE_SETTLE_TRIES):
+        used, _ = _balance(client)
+        if used > used_before:
+            break
+        sleep(1)
+    return used
 
 
 def run(client, script, voices, out_root, scenes=None, dry_run=False, log=print):
@@ -131,9 +166,11 @@ def run(client, script, voices, out_root, scenes=None, dry_run=False, log=print)
         else:
             est, _ = ledger.estimate(it.price_key, it.chars, prices)
             used_before, remaining = _balance(client)
-            ledger.check_budget(ledger.credits_spent(rows), est, remaining)
+            # The hackathon account started at 0, so its usage is the real spend; the log total
+            # (estimates where a cost could not be measured) is only the fallback.
+            ledger.check_budget(used_before, est, remaining)
             audio, meta = it.call(client)
-            used_after, _ = _balance(client)
+            used_after = _settled_usage(client, used_before, sleep=getattr(client, "sleep", None))
             actual = used_after - used_before if used_after > used_before else None
             cache.store(key, audio, meta)
             prices = ledger.record_price(prices, it.price_key, it.chars, actual)
@@ -163,8 +200,11 @@ def run(client, script, voices, out_root, scenes=None, dry_run=False, log=print)
     for bed in plan["beds"]:
         bed.pop("prompt", None)
     folder.mkdir(parents=True, exist_ok=True)
+    # segments.json goes last and lands in one rename, so Surface's watcher never sees a partial plan.
     for name, data in (("script.json", sub_script), ("voices.json", voices), ("segments.json", plan)):
-        (folder / name).write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+        tmp = folder / f".{name}.tmp"
+        tmp.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+        tmp.replace(folder / name)
     errors = check_folder(folder)
     if errors:
         raise RuntimeError("rendered folder fails the interface check:\n" + "\n".join(errors))
