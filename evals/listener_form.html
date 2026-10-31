@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Listener A/B Ratings</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --color-bg: #FAFAF7;
+    --color-surface: #FFFFFF;
+    --color-text: #1A1A1A;
+    --color-muted: #6B6B6B;
+    --color-border: #D6D6D0;
+    --color-accent: #2F6FEB;
+    --color-on-accent: #FFFFFF;
+    --color-danger: #C2410C;
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --color-bg: #141412;
+      --color-surface: #1E1E1B;
+      --color-text: #F2F2EE;
+      --color-muted: #B0B0A8;
+      --color-border: #3A3A35;
+      --color-accent: #7AA5F5;
+      --color-on-accent: #0E1A33;
+      --color-danger: #F08A5D;
+    }
+  }
+  :root[data-theme="dark"] {
+    --color-bg: #141412;
+    --color-surface: #1E1E1B;
+    --color-text: #F2F2EE;
+    --color-muted: #B0B0A8;
+    --color-border: #3A3A35;
+    --color-accent: #7AA5F5;
+    --color-on-accent: #0E1A33;
+    --color-danger: #F08A5D;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--color-bg); color: var(--color-text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 24px; margin: 0 0 8px; }
+  h2 { font-size: 20px; margin: 0 0 12px; }
+  p.lead, .muted { color: var(--color-muted); }
+  section {
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius); padding: 16px; margin-top: 16px;
+  }
+  label.field { display: block; margin-bottom: 12px; }
+  label.field span { display: block; font-weight: 600; margin-bottom: 4px; }
+  input[type=text], textarea, input[type=file] {
+    width: 100%; font: inherit; color: inherit; background: var(--color-bg);
+    border: 1px solid var(--color-border); border-radius: var(--radius); padding: 8px 12px;
+  }
+  audio { width: 100%; margin: 8px 0 12px; }
+  fieldset { border: 0; margin: 0 0 12px; padding: 0; }
+  legend { font-weight: 600; margin-bottom: 4px; padding: 0; }
+  .scale { display: flex; flex-wrap: wrap; gap: 8px; }
+  .scale label {
+    display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 12px;
+    border: 1px solid var(--color-border); border-radius: var(--radius); cursor: pointer;
+  }
+  /* The 1-5 scales stay on one row at phone width; wrapping left "5" alone and the scale unreadable. */
+  .scale[data-scale] { display: grid; grid-template-columns: repeat(5, 1fr); }
+  .scale[data-scale] label { justify-content: center; padding: 0 4px; }
+  .scale-ends { display: flex; justify-content: space-between; font-size: 14px; color: var(--color-muted); }
+  button {
+    font: inherit; min-height: 44px; padding: 8px 16px; border-radius: var(--radius); cursor: pointer;
+    border: 1px solid var(--color-accent); background: transparent; color: var(--color-accent);
+  }
+  button.primary { background: var(--color-accent); color: var(--color-on-accent); font-weight: 600; }
+  button.danger { border-color: var(--color-danger); color: var(--color-danger); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  :focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .error { color: var(--color-danger); font-weight: 600; min-height: 1.5em; margin: 8px 0 0; }
+  .status { min-height: 1.5em; margin: 8px 0 0; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Listener A/B ratings</h1>
+  <p class="lead">Two clips of the same lines: one read by a single voice, one performed by a full cast with sound.
+    Nothing leaves this page until you download the CSV.</p>
+
+  <section id="setup" aria-labelledby="setup-title">
+    <h2 id="setup-title">1. Setup (operator, before the listener sits down)</h2>
+    <label class="field"><span>Flat clip (flat.mp3)</span>
+      <input type="file" id="file-flat" accept="audio/*"></label>
+    <label class="field"><span>Full cast excerpt (excerpt.mp3)</span>
+      <input type="file" id="file-full" accept="audio/*"></label>
+    <label class="field"><span>Listener code (not a name, e.g. L01)</span>
+      <input type="text" id="listener" maxlength="12" autocomplete="off" pattern="[A-Za-z0-9-]{1,12}"></label>
+    <label><input type="checkbox" id="practice"> Practice run (saved, but left out of the summary)</label>
+    <div class="actions"><button class="primary" id="start">Start listener</button></div>
+    <p class="error" id="setup-error" role="alert"></p>
+  </section>
+
+  <form id="rate" hidden aria-labelledby="rate-title" novalidate>
+    <section>
+      <h2 id="rate-title">2. Listen to both clips, then rate each one</h2>
+      <p class="muted">Play them in any order, as often as you like. Use headphones if you have them.</p>
+    </section>
+    <section id="clip-a"></section>
+    <section id="clip-b"></section>
+    <section>
+      <fieldset>
+        <legend>Which clip would you rather keep listening to?</legend>
+        <div class="scale">
+          <label><input type="radio" name="preferred" value="A"> Clip A</label>
+          <label><input type="radio" name="preferred" value="B"> Clip B</label>
+          <label><input type="radio" name="preferred" value="none"> No preference</label>
+        </div>
+      </fieldset>
+      <label class="field"><span>Anything else? (optional, 300 characters)</span>
+        <textarea id="comment" rows="3" maxlength="300"></textarea></label>
+      <div class="actions"><button class="primary" type="submit">Save rating</button></div>
+      <p class="error" id="rate-error" role="alert"></p>
+    </section>
+  </form>
+
+  <section aria-labelledby="saved-title">
+    <h2 id="saved-title">3. Saved ratings</h2>
+    <p id="saved-count" class="status" aria-live="polite"></p>
+    <div class="actions">
+      <button id="download">Download CSV</button>
+      <button id="clear" class="danger">Clear all</button>
+    </div>
+    <p class="muted">Save the download as <code>results/listener_ratings.csv</code>, then run
+      <code>python -m evals.summarise_ratings</code>.</p>
+  </section>
+</main>
+
+<template id="clip-template">
+  <h2 class="clip-title"></h2>
+  <audio controls preload="auto"></audio>
+  <fieldset>
+    <legend>Clarity: how easy is it to follow who says what?</legend>
+    <div class="scale" data-scale="clarity"></div>
+    <div class="scale-ends"><span>1 = hard</span><span>5 = easy</span></div>
+  </fieldset>
+  <fieldset>
+    <legend>Immersion: how much does it pull you into the story?</legend>
+    <div class="scale" data-scale="immersion"></div>
+    <div class="scale-ends"><span>1 = not at all</span><span>5 = completely</span></div>
+  </fieldset>
+</template>
+
+<script>
+"use strict";
+// Column order must match evals/summarise_ratings.py.
+const COLUMNS = ["listener_id", "rated_at", "practice", "flat_first", "clarity_flat", "clarity_full_cast",
+                 "immersion_flat", "immersion_full_cast", "preferred", "comment"];
+const STORAGE_KEY = "fullcast-listener-ratings-v1";
+const LISTENER_ID = /^[A-Za-z0-9-]{1,12}$/;
+
+const $ = (id) => document.getElementById(id);
+let rows = loadRows();
+let urls = {flat: null, full_cast: null};
+let flatFirst = true;
+let clearArmed = false;
+
+function loadRows() {
+  // Browser storage only protects against an accidental reload; the CSV download is the real record.
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+}
+function saveRows() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(rows)); } catch { /* still in memory; download before closing */ }
+  renderCount();
+}
+function renderCount() {
+  const real = rows.filter((r) => !r.practice).length;
+  $("saved-count").textContent = `${rows.length} saved (${real} real, ${rows.length - real} practice).`;
+  $("download").disabled = rows.length === 0;
+  $("clear").disabled = rows.length === 0;
+}
+
+function buildClip(section, letter) {
+  section.replaceChildren($("clip-template").content.cloneNode(true));
+  section.querySelector(".clip-title").textContent = `Clip ${letter}`;
+  for (const scale of section.querySelectorAll("[data-scale]")) {
+    for (let n = 1; n <= 5; n++) {
+      const label = document.createElement("label");
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = `${scale.dataset.scale}_${letter}`;
+      input.value = String(n);
+      label.append(input, ` ${n}`);
+      scale.append(label);
+    }
+  }
+}
+
+function startListener() {
+  const flat = $("file-flat").files[0], full = $("file-full").files[0];
+  const listener = $("listener").value.trim();
+  if (!flat || !full) return showError("setup-error", "Choose both audio files.");
+  if (!LISTENER_ID.test(listener)) return showError("setup-error", "Listener code: 1-12 letters, digits or dashes.");
+  if (rows.some((r) => r.listener_id === listener && !r.practice) && !$("practice").checked) {
+    return showError("setup-error", `${listener} already has a saved rating. Use a new code.`);
+  }
+  showError("setup-error", "");
+  for (const key of Object.keys(urls)) if (urls[key]) URL.revokeObjectURL(urls[key]);
+  urls = {flat: URL.createObjectURL(flat), full_cast: URL.createObjectURL(full)};
+  // Random order per listener, so a preference for whichever clip plays first can be measured.
+  flatFirst = crypto.getRandomValues(new Uint8Array(1))[0] < 128;
+
+  buildClip($("clip-a"), "A");
+  buildClip($("clip-b"), "B");
+  $("clip-a").querySelector("audio").src = flatFirst ? urls.flat : urls.full_cast;
+  $("clip-b").querySelector("audio").src = flatFirst ? urls.full_cast : urls.flat;
+  $("rate").reset();
+  $("setup").hidden = true;  // hides the file names, so the listener can't tell which clip is which
+  $("rate").hidden = false;
+  $("rate").scrollIntoView({behavior: "smooth"});
+}
+
+function picked(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : null;
+}
+
+function saveRating(event) {
+  event.preventDefault();
+  const answers = {};
+  for (const name of ["clarity_A", "clarity_B", "immersion_A", "immersion_B", "preferred"]) {
+    answers[name] = picked(name);
+    if (!answers[name]) return showError("rate-error", "Please answer every question before saving.");
+  }
+  // Store by condition, not by letter, so the summary never needs to know the play order to read a row.
+  const flatLetter = flatFirst ? "A" : "B", fullLetter = flatFirst ? "B" : "A";
+  const preferred = answers.preferred === "none" ? "no_preference"
+                  : answers.preferred === flatLetter ? "flat" : "full_cast";
+  rows.push({
+    listener_id: $("listener").value.trim(),
+    rated_at: new Date().toISOString(),
+    practice: $("practice").checked,
+    flat_first: flatFirst,
+    clarity_flat: Number(answers[`clarity_${flatLetter}`]),
+    clarity_full_cast: Number(answers[`clarity_${fullLetter}`]),
+    immersion_flat: Number(answers[`immersion_${flatLetter}`]),
+    immersion_full_cast: Number(answers[`immersion_${fullLetter}`]),
+    preferred,
+    comment: $("comment").value.trim().slice(0, 300),
+  });
+  saveRows();
+  showError("rate-error", "");
+  for (const audio of document.querySelectorAll("#rate audio")) audio.pause();
+  $("rate").hidden = true;
+  $("setup").hidden = false;
+  $("listener").value = "";
+  $("practice").checked = false;
+  $("saved-count").textContent += " Rating saved. Ready for the next listener.";
+}
+
+function csvCell(value) {
+  let s = String(value);
+  // A leading = + - @ makes spreadsheets run the cell as a formula; a quote mark keeps it as text.
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  if (/[",\r\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+
+function downloadCsv() {
+  const lines = [COLUMNS.join(",")].concat(rows.map((r) => COLUMNS.map((c) => csvCell(r[c])).join(",")));
+  const blob = new Blob([lines.join("\r\n") + "\r\n"], {type: "text/csv"});
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "listener_ratings.csv";
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function clearAll() {
+  // Two clicks instead of a confirm() dialog, so the page never blocks on a modal.
+  if (!clearArmed) {
+    clearArmed = true;
+    $("clear").textContent = "Click again to delete all ratings";
+    setTimeout(() => { clearArmed = false; $("clear").textContent = "Clear all"; }, 4000);
+    return;
+  }
+  clearArmed = false;
+  $("clear").textContent = "Clear all";
+  rows = [];
+  saveRows();
+}
+
+function showError(id, message) { $(id).textContent = message; }
+
+$("start").addEventListener("click", startListener);
+$("rate").addEventListener("submit", saveRating);
+$("download").addEventListener("click", downloadCsv);
+$("clear").addEventListener("click", clearAll);
+renderCount();
+</script>
+</body>
+</html>
