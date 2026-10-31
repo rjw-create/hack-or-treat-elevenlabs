@@ -1,0 +1,679 @@
+{
+  "version": 1,
+  "file": "full-cast.mp3",
+  "duration_ms": 328411,
+  "segments": [
+    {
+      "id": "s01-d001",
+      "kind": "dialogue",
+      "scene": 1,
+      "file": "stems/dialogue/s01-d001.mp3",
+      "start_ms": 0,
+      "end_ms": 25030,
+      "trim_start_ms": 0,
+      "level_db": 0.0,
+      "line_ids": [
+        "s01-l001",
+        "s01-l002",
+        "s01-l003",
+        "s01-l004"
+      ],
+      "line_times": [
+        {
+          "line_id": "s01-l001",
+          "start_ms": 0,
+          "end_ms": 16520
+        },
+        {
+          "line_id": "s01-l002",
+          "start_ms": 16520,
+          "end_ms": 20680
+        },
+        {
+          "line_id": "s01-l003",
+          "start_ms": 20680,
+          "end_ms": 21600
+        },
+        {
+          "line_id": "s01-l004",
+          "start_ms": 21600,
+          "end_ms": 25030
+        }
+      ],
+      "cue": null
+    },
+    {
+      "id": "s01-x001",
+      "kind": "sfx",
+      "scene": 1,
+      "file": "stems/sfx/s01-x001.mp3",
+      "start_ms": 25380,
+      "end_ms": 26061,
+      "trim_start_ms": 0,
+      "level_db": -0.22,
+      "line_ids": [],
+      "line_times": null,
+      "cue": "a garden gate bangs shut, then heavy footsteps on a wet path"
+    },
+    {
+      "id": "s01-d002",
+      "kind": "dialogue",
+      "scene": 1,
+      "file": "stems/dialogue/s01-d002.mp3",
+      "start_ms": 26361,
+      "end_ms": 67027,
+      "trim_start_ms": 0,
+      "level_db": 0.0,
+      "line_ids": [
+        "s01-l005",
+        "s01-l006",
+        "s01-l007",
+        "s01-l008",
+        "s01-l009",
+        "s01-l010"
+      ],
+      "line_times": [
+        {
+          "line_id": "s01-l005",
+          "start_ms": 26361,
+          "end_ms": 27881
+        },
+        {
+          "line_id": "s01-l006",
+          "start_ms": 27881,
+          "end_ms": 39001
+        },
+        {
+          "line_id": "s01-l007",
+          "start_ms": 39001,
+          "end_ms": 44361
+        },
+        {
+          "line_id": "s01-l008",
+          "start_ms": 44361,
+          "end_ms": 47321
+        },
+        {
+          "line_id": "s01-l009",
+          "start_ms": 47321,
+          "end_ms": 48761
+        },
+        {
+          "line_id": "s01-l010",
+          "start_ms": 48761,
+          "end_ms": 67027
+        }
+      ],
+      "cue": null
+    },
+    {
+      "id": "s01-d003",
+      "kind": "dialogue",
+      "scene": 1,
+      "file": "stems/dialogue/s01-d003.mp3",
+      "start_ms": 67377,
+      "end_ms": 83534,
+      "trim_start_ms": 3,
+      "level_db": 0.0,
+      "line_ids": [
+        "s01-l011",
+        "s01-l012",
+        "s01-l013",
+        "s01-l014"
+      ],
+      "line_times": [
+        {
+          "line_id": "s01-l011",
+          "start_ms": 67377,
+          "end_ms": 70494
+        },
+        {
+          "line_id": "s01-l012",
+          "start_ms": 70494,
+          "end_ms": 71694
+        },
+        {
+          "line_id": "s01-l013",
+          "start_ms": 71694,
+          "end_ms": 74094
+        },
+        {
+          "line_id": "s01-l014",
+          "start_ms": 74094,
+          "end_ms": 83534
+        }
+      ],
+      "cue": null
+    },
+    {
+      "id": "s01-d004",
+      "kind": "dialogue",
+      "scene": 1,
+      "file": "stems/dialogue/s01-d004.mp3",
+      "start_ms": 83884,
+      "end_ms": 115009,
+      "trim_start_ms": 0,
+      "level_db": 0.0,
+      "line_ids": [
+        "s01-l015",
+        "s01-l016",
+        "s01-l017",
+        "s01-l018",
+        "s01-l019"
+      ],
+      "line_times": [
+        {
+          "line_id": "s01-l015",
+          "start_ms": 83884,
+          "end_ms": 90844
+        },
+        {
+          "line_id": "s01-l016",
+          "start_ms": 90844,
+          "end_ms": 101364
+        },
+        {
+          "line_id": "s01-l017",
+          "start_ms": 101364,
+          "end_ms": 107617
+        },
+        {
+          "line_id": "s01-l018",
+          "start_ms": 107617,
+          "end_ms": 112804
+        },
+        {
+          "line_id": "s01-l019",
+          "start_ms": 112804,
+          "end_ms": 115009
+        }
+      ],
+      "cue": null
+    },
+    {
+      "id": "s01-x002",
+      "kind": "sfx",
+      "scene": 1,
+      "file": "stems/sfx/s01-x002.mp3",
+      "start_ms": 115359,
+      "end_ms": 116359,
+      "trim_start_ms": 0,
+      "level_db": -1.41,
+      "line_ids": [],
+      "line_times": null,
+      "cue": "a loud dramatic crash of piano chords"
+    },
+    {
+      "id": "s01-d005",
+      "kind": "dialogue",
+      "scene": 1,
+      "file": "stems/dialogue/s01-d005.mp3",
+      "start_ms": 116659,
+      "end_ms": 125981,
+      "trim_start_ms": 0,
+      "level_db": 0.0,
+      "line_ids": [
+        "s01-l020",
+        "s01-l021"
+      ],
+      "line_times": [
+        {
+          "line_id": "s01-l020",
+          "start_ms": 116659,
+          "end_ms": 122179
+        },
+        {
+          "line_id": "s01-l021",
+          "start_ms": 122179,
+          "end_ms": 125981
+        }
+      ],
+      "cue": null
+    },
+    {
+      "id": "s02-d001",
+      "kind": "dialogue",
+      "scene": 2,
+      "file": "stems/dialogue/s02-d001.mp3",
+      "start_ms": 127481,
+      "end_ms": 149319,
+      "trim_start_ms": 0,
+      "level_db": 0.0,
+      "line_ids": [
+        "s02-l001",
+        "s02-l002"
+      ],
+      "line_times": [
+        {
+          "line_id": "s02-l001",
+          "start_ms": 127481,
+          "end_ms": 131641
+        },
+        {
+          "line_id": "s02-l002",
+          "start_ms": 131641,
+          "end_ms": 149319
+        }
+      ],
+      "cue": null
+    },
+    {
+      "id": "s02-x001",
+      "kind": "sfx",
+      "scene": 2,
+      "file": "stems/sfx/s02-x001.mp3",
+      "start_ms": 149669,
+      "end_ms": 151551,
+      "trim_start_ms": 0,
+      "level_db": 7.79,
+      "line_ids": [],
+      "line_times": null,
+      "cue": "a garden gate creaks open, slow footsteps on a path"
+    },
+    {
+      "id": "s02-d002",
+      "kind": "dialogue",
+      "scene": 2,
+      "file": "stems/dialogue/s02-d002.mp3",
+      "start_ms": 151851,
+      "end_ms": 170988,
+      "trim_start_ms": 0,
+      "level_db": 0.0,
+      "line_ids": [
+        "s02-l003",
+        "s02-l004",
+        "s02-l005",
+        "s02-l006",
+        "s02-l007",
+        "s02-l008"
+      ],
+      "line_times": [
+        {
+          "line_id": "s02-l003",
+          "start_ms": 151851,
+          "end_ms": 156582
+        },
+        {
+          "line_id": "s02-l004",
+          "start_ms": 156582,
+          "end_ms": 161771
+        },
+        {
+          "line_id": "s02-l005",
+          "start_ms": 161771,
+          "end_ms": 162891
+        },
+        {
+          "line_id": "s02-l006",
+          "start_ms": 162891,
+          "end_ms": 163771
+        },
+        {
+          "line_id": "s02-l007",
+          "start_ms": 163771,
+          "end_ms": 167291
+        },
+        {
+          "line_id": "s02-l008",
+          "start_ms": 167291,
+          "end_ms": 170988
+        }
+      ],
+      "cue": null
+    },
+    {
+      "id": "s02-d003",
+      "kind": "dialogue",
+      "scene": 2,
+      "file": "stems/dialogue/s02-d003.mp3",
+      "start_ms": 171338,
+      "end_ms": 196132,
+      "trim_start_ms": 0,
+      "level_db": 0.0,
+      "line_ids": [
+        "s02-l009",
+        "s02-l010",
+        "s02-l011",
+        "s02-l012",
+        "s02-l013"
+      ],
+      "line_times": [
+        {
+          "line_id": "s02-l009",
+          "start_ms": 171338,
+          "end_ms": 173178
+        },
+        {
+          "line_id": "s02-l010",
+          "start_ms": 173178,
+          "end_ms": 179498
+        },
+        {
+          "line_id": "s02-l011",
+          "start_ms": 179498,
+          "end_ms": 193205
+        },
+        {
+          "line_id": "s02-l012",
+          "start_ms": 193205,
+          "end_ms": 194538
+        },
+        {
+          "line_id": "s02-l013",
+          "start_ms": 194538,
+          "end_ms": 196132
+        }
+      ],
+      "cue": null
+    },
+    {
+      "id": "s02-x002",
+      "kind": "sfx",
+      "scene": 2,
+      "file": "stems/sfx/s02-x002.mp3",
+      "start_ms": 196482,
+      "end_ms": 197023,
+      "trim_start_ms": 0,
+      "level_db": -1.16,
+      "line_ids": [],
+      "line_times": null,
+      "cue": "a heavy body falls onto a wooden floor"
+    },
+    {
+      "id": "s03-d001",
+      "kind": "dialogue",
+      "scene": 3,
+      "file": "stems/dialogue/s03-d001.mp3",
+      "start_ms": 198523,
+      "end_ms": 242573,
+      "trim_start_ms": 0,
+      "level_db": 0.0,
+      "line_ids": [
+        "s03-l001",
+        "s03-l002",
+        "s03-l003"
+      ],
+      "line_times": [
+        {
+          "line_id": "s03-l001",
+          "start_ms": 198523,
+          "end_ms": 219803
+        },
+        {
+          "line_id": "s03-l002",
+          "start_ms": 219803,
+          "end_ms": 230763
+        },
+        {
+          "line_id": "s03-l003",
+          "start_ms": 230763,
+          "end_ms": 242573
+        }
+      ],
+      "cue": null
+    },
+    {
+      "id": "s03-d002",
+      "kind": "dialogue",
+      "scene": 3,
+      "file": "stems/dialogue/s03-d002.mp3",
+      "start_ms": 242923,
+      "end_ms": 254318,
+      "trim_start_ms": 0,
+      "level_db": 0.0,
+      "line_ids": [
+        "s03-l004",
+        "s03-l005",
+        "s03-l006",
+        "s03-l007"
+      ],
+      "line_times": [
+        {
+          "line_id": "s03-l004",
+          "start_ms": 242923,
+          "end_ms": 248363
+        },
+        {
+          "line_id": "s03-l005",
+          "start_ms": 248363,
+          "end_ms": 250950
+        },
+        {
+          "line_id": "s03-l006",
+          "start_ms": 250950,
+          "end_ms": 252043
+        },
+        {
+          "line_id": "s03-l007",
+          "start_ms": 252043,
+          "end_ms": 254318
+        }
+      ],
+      "cue": null
+    },
+    {
+      "id": "s03-d003",
+      "kind": "dialogue",
+      "scene": 3,
+      "file": "stems/dialogue/s03-d003.mp3",
+      "start_ms": 254668,
+      "end_ms": 272188,
+      "trim_start_ms": 0,
+      "level_db": 0.0,
+      "line_ids": [
+        "s03-l008"
+      ],
+      "line_times": [
+        {
+          "line_id": "s03-l008",
+          "start_ms": 254668,
+          "end_ms": 272188
+        }
+      ],
+      "cue": null
+    },
+    {
+      "id": "s03-x001",
+      "kind": "sfx",
+      "scene": 3,
+      "file": "stems/sfx/s03-x001.mp3",
+      "start_ms": 272538,
+      "end_ms": 273241,
+      "trim_start_ms": 0,
+      "level_db": 2.85,
+      "line_ids": [],
+      "line_times": null,
+      "cue": "one quiet, stealthy knock on a heavy wooden front door"
+    },
+    {
+      "id": "s03-d004",
+      "kind": "dialogue",
+      "scene": 3,
+      "file": "stems/dialogue/s03-d004.mp3",
+      "start_ms": 273541,
+      "end_ms": 278027,
+      "trim_start_ms": 0,
+      "level_db": 0.0,
+      "line_ids": [
+        "s03-l009"
+      ],
+      "line_times": [
+        {
+          "line_id": "s03-l009",
+          "start_ms": 273541,
+          "end_ms": 278027
+        }
+      ],
+      "cue": null
+    },
+    {
+      "id": "s03-x002",
+      "kind": "sfx",
+      "scene": 3,
+      "file": "stems/sfx/s03-x002.mp3",
+      "start_ms": 278377,
+      "end_ms": 280377,
+      "trim_start_ms": 0,
+      "level_db": 11.2,
+      "line_ids": [],
+      "line_times": null,
+      "cue": "a loud knock echoing through an empty house"
+    },
+    {
+      "id": "s03-d005",
+      "kind": "dialogue",
+      "scene": 3,
+      "file": "stems/dialogue/s03-d005.mp3",
+      "start_ms": 280677,
+      "end_ms": 294713,
+      "trim_start_ms": 0,
+      "level_db": 0.0,
+      "line_ids": [
+        "s03-l010",
+        "s03-l011",
+        "s03-l012",
+        "s03-l013"
+      ],
+      "line_times": [
+        {
+          "line_id": "s03-l010",
+          "start_ms": 280677,
+          "end_ms": 283237
+        },
+        {
+          "line_id": "s03-l011",
+          "start_ms": 283237,
+          "end_ms": 284917
+        },
+        {
+          "line_id": "s03-l012",
+          "start_ms": 284917,
+          "end_ms": 292597
+        },
+        {
+          "line_id": "s03-l013",
+          "start_ms": 292597,
+          "end_ms": 294713
+        }
+      ],
+      "cue": null
+    },
+    {
+      "id": "s03-x003",
+      "kind": "sfx",
+      "scene": 3,
+      "file": "stems/sfx/s03-x003.mp3",
+      "start_ms": 295063,
+      "end_ms": 295543,
+      "trim_start_ms": 0,
+      "level_db": 1.35,
+      "line_ids": [],
+      "line_times": null,
+      "cue": "frantic loud knocking on a front door, a door chain rattling and a bolt scraping"
+    },
+    {
+      "id": "s03-d006",
+      "kind": "dialogue",
+      "scene": 3,
+      "file": "stems/dialogue/s03-d006.mp3",
+      "start_ms": 295843,
+      "end_ms": 328411,
+      "trim_start_ms": 0,
+      "level_db": 0.0,
+      "line_ids": [
+        "s03-l014",
+        "s03-l015"
+      ],
+      "line_times": [
+        {
+          "line_id": "s03-l014",
+          "start_ms": 295843,
+          "end_ms": 310403
+        },
+        {
+          "line_id": "s03-l015",
+          "start_ms": 310403,
+          "end_ms": 328411
+        }
+      ],
+      "cue": null
+    }
+  ],
+  "beds": [
+    {
+      "id": "s01-amb",
+      "kind": "ambience",
+      "file": "stems/beds/s01-amb.mp3",
+      "start_ms": 0,
+      "end_ms": 125981,
+      "gain_db": -20,
+      "level_db": 0.3,
+      "loop": true,
+      "duck": false
+    },
+    {
+      "id": "theme",
+      "kind": "music",
+      "file": "stems/beds/theme.mp3",
+      "start_ms": 0,
+      "end_ms": 20000,
+      "gain_db": -14,
+      "level_db": 0.0,
+      "loop": false,
+      "duck": true
+    },
+    {
+      "id": "s02-amb",
+      "kind": "ambience",
+      "file": "stems/beds/s02-amb.mp3",
+      "start_ms": 127481,
+      "end_ms": 197023,
+      "gain_db": -20,
+      "level_db": 22.14,
+      "loop": true,
+      "duck": false
+    },
+    {
+      "id": "s03-amb",
+      "kind": "ambience",
+      "file": "stems/beds/s03-amb.mp3",
+      "start_ms": 198523,
+      "end_ms": 328411,
+      "gain_db": -20,
+      "level_db": 13.63,
+      "loop": true,
+      "duck": false
+    }
+  ],
+  "chapters": [
+    {
+      "title": "The paw",
+      "segment": "s01-d001",
+      "start_ms": 0
+    },
+    {
+      "title": "The visitor",
+      "segment": "s02-d001",
+      "start_ms": 127481
+    },
+    {
+      "title": "The knocking",
+      "segment": "s03-d001",
+      "start_ms": 198523
+    }
+  ],
+  "compare": {
+    "flat_file": "flat.mp3",
+    "flat_ms": 26240,
+    "line_ids": [
+      "s01-l001",
+      "s01-l002",
+      "s01-l003",
+      "s01-l004",
+      "s01-l005"
+    ],
+    "full_start_ms": 0,
+    "full_end_ms": 67027,
+    "excerpt_file": "excerpt.mp3"
+  }
+}
