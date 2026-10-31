@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "title": "The Monkey's Paw",
+  "author": "W. W. Jacobs",
+  "source": "texts/2026-10-31-monkeys-paw.txt",
+  "note": "Sample for testing the interface only. Lines are short stand-ins, not the real adaptation.",
+  "characters": [
+    {"id": "narrator", "name": "Narrator", "description": "Calm, low storyteller voice, older British man, unhurried, a hint of dread."},
+    {"id": "mr-white", "name": "Mr White", "description": "Elderly British father, cheerful and curious, slightly reedy voice."},
+    {"id": "mrs-white", "name": "Mrs White", "description": "Elderly British mother, warm but sharp, later raw with grief."},
+    {"id": "herbert", "name": "Herbert", "description": "Young British man in his twenties, teasing, playful, quick."},
+    {"id": "morris", "name": "Sergeant-Major Morris", "description": "Weathered British soldier, gravelly, guarded, speaks in short sentences."},
+    {"id": "maw-meggins-man", "name": "The man from Maw and Meggins", "description": "Nervous, formal British clerk, hesitant, apologetic."}
+  ],
+  "scenes": [
+    {
+      "number": 1,
+      "title": "The parlour",
+      "ambience": "wind and rain outside, crackling fire indoors",
+      "music_mood": "uneasy, quiet strings",
+      "lines": [
+        {"id": "s01-l001", "speaker": "narrator", "text": "[quietly] Outside, the night was cold and wet. Inside, the fire burned bright."},
+        {"id": "s01-l002", "speaker": "mr-white", "text": "Listen to the wind. I hope he still comes tonight."},
+        {"id": "s01-l003", "speaker": "herbert", "text": "[laughing] Father, nobody walks out this far on a night like this."},
+        {"id": "s01-l004", "speaker": "morris", "text": "[low] It is just a little paw. Dried. Nothing to look at."},
+        {"id": "s01-l005", "speaker": "mrs-white", "text": "[uneasy] Then why do you keep it, Sergeant-Major?"}
+      ]
+    },
+    {
+      "number": 2,
+      "title": "The visitor",
+      "ambience": "quiet house, clock ticking",
+      "music_mood": "cold, still",
+      "lines": [
+        {"id": "s02-l001", "speaker": "narrator", "text": "A stranger stood at the gate, as if he could not decide to come in."},
+        {"id": "s02-l002", "speaker": "maw-meggins-man", "text": "[hesitant] I was asked to call. I come from Maw and Meggins."},
+        {"id": "s02-l003", "speaker": "mrs-white", "text": "[whispers] Is it Herbert? Is something wrong with Herbert?"}
+      ]
+    }
+  ]
+}

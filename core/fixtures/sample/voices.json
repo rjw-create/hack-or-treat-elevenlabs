@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "note": "Sample voice ids are fake. Real ids come from the cast step.",
+  "voices": {
+    "narrator": {"voice_id": "sample-voice-narrator", "source": "library", "label": "low, measured"},
+    "mr-white": {"voice_id": "sample-voice-mr-white", "source": "voice_design", "label": "reedy, cheerful"},
+    "mrs-white": {"voice_id": "sample-voice-mrs-white", "source": "voice_design", "label": "warm, sharp"},
+    "herbert": {"voice_id": "sample-voice-herbert", "source": "library", "label": "young, playful"},
+    "morris": {"voice_id": "sample-voice-morris", "source": "voice_design", "label": "gravelly"},
+    "maw-meggins-man": {"voice_id": "sample-voice-maw-meggins-man", "source": "library", "label": "nervous clerk"}
+  }
+}
