@@ -41,12 +41,13 @@ render used `[TBD: credits, from python -m evals.credits]` credits for `[TBD: le
 - Keeping a long multi-voice render inside a fixed credit budget: the script length was cut to fit
   before anything was generated.
 - Timing without timestamps: clips have no fixed start times, so the mixer measures each one and builds
-  the timeline itself. The script highlighting comes from that same timeline.
+  the timeline itself. The script highlighting comes from that same timeline, using the per-line times
+  ElevenLabs returns with the dialogue where it has them. `[TBD: confirm on the real render]`
 - A local-server problem: Python's built-in server can't serve partial files, so the browser couldn't
   seek in the audio. We wrote a small server that can.
 
 ## What's next
-- Word-level highlighting from ElevenLabs timestamps, instead of per scene segment.
+- Word-level highlighting, if the dialogue timing data is fine-grained enough. Today it is line by line.
 - More public-domain stories through the same pipeline.
 
 ## Links
