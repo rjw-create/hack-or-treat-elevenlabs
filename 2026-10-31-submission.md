@@ -1,7 +1,7 @@
 # Submission draft: Full Cast
 
 Draft text for the Hack or Treat submission form, category **Best Project Built With ElevenLabs**.
-Paste each section into the matching field. Resolve every `[TBD: ...]` and `[CHECK: ...]` before submitting.
+Paste each section into the matching field. Resolve every `[TBD: ...]` before submitting.
 
 ## Name
 Full Cast
@@ -37,8 +37,8 @@ a one-voice reading and the full cast at the same moment.
 ## Budget and scope
 We had 10,000 ElevenLabs credits. That set the scope: the drama is an abridged version of 5 minutes
 28 seconds, not the full story. Every generated clip is cached so nothing is generated twice. The
-project used 7,280 of its 10,000 credits, previews and re-renders included.
-`[CHECK: confirm 7,280 on the ElevenLabs account page before submitting; the per-call log, mostly estimates, sums higher]`
+project used 7,280 of its 10,000 credits per the account balance, previews and re-renders included.
+Dialogue costs 1 credit per character; sound effects about 100 each.
 
 ## Challenges
 - Keeping a long multi-voice render inside a fixed credit budget: the script length was cut to fit
@@ -54,7 +54,8 @@ project used 7,280 of its 10,000 credits, previews and re-renders included.
 - More public-domain stories through the same pipeline.
 
 ## Links
-- Code: https://github.com/rjw-create/hack-or-treat-elevenlabs (private until Jackson makes it public)
+- Live demo: https://rjw-create.github.io/hack-or-treat-elevenlabs/demo/
+- Code: https://github.com/rjw-create/hack-or-treat-elevenlabs
 - Demo video: `[TBD]`
 
 ## Credits
