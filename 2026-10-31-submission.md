@@ -29,7 +29,8 @@ a one-voice reading and the full cast at the same moment.
   one FFmpeg filter graph. The drone ducks under dialogue, following the dialogue timeline.
 - **Player:** one static HTML page, no framework.
 - **Checks:** scripts confirm every line is spoken once and in order, check every clip for silence,
-  clipping and loudness, and report credit use. None of them spend credits.
+  clipping and loudness, and report credit use. None of them spend credits. A listener A/B form
+  (one voice against the full cast) is ready but has not been run, so we report no listener ratings.
 - **Team setup:** three Claude Code sessions worked in parallel (pipeline, mix and story, measurement),
   each in its own git worktree, joined by a written interface.
 

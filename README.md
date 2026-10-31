@@ -82,6 +82,13 @@ All of these read local files only and spend no credits.
 | `python -m evals.audio_checks` | Every clip: length, silence, clipping, loudness, pauses |
 | `python -m evals.credits` | Credits by feature, against the budget, and credits per finished minute |
 
+### Listener A/B test (available, not yet run)
+`evals/listener_form.html` plays the flat clip against the same lines from the full cast
+(`flat.mp3` and `excerpt.mp3` from the mixer) and records ratings in the browser until you download
+them as a CSV; nothing is sent anywhere. `python -m evals.summarise_ratings` summarises that CSV and
+can also measure both clips' loudness. **No one has taken the test yet, so there are no ratings to
+report.**
+
 ## How the repo is organised
 | Folder | What it holds | Role |
 | --- | --- | --- |
