@@ -23,6 +23,8 @@ Before recording:
 
 ## Notes
 - If the video must be under 2:00, cut the 1:20-1:45 interface shot and shorten the credit line.
+- The listener A/B test (`evals/listener_form.html`) has not been run as of 2026-10-31, so the video
+  makes no claim about which version listeners prefer.
 - Keep claims to what the video shows. No listener-rating numbers unless Proof's results are in
   `results/` and quoted with their sample size.
 - The adaptation was written with Claude Code in the session, not by an API call at run time. If asked,
