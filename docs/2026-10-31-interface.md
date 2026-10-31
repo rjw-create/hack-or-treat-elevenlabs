@@ -91,6 +91,13 @@ forward slashes. Samples of every file are in `core/fixtures/sample/`.
   (e.g. `ffprobe`) and computes start times while mixing.
 - `kind`: `dialogue` (one Text to Dialogue request, one or more script lines, at most 2,000 characters) or
   `sfx` (a sound effect played between lines).
+- **Segment size (decided 2026-10-31):** Core splits dialogue at natural beats into segments of about
+  3-6 lines and at most ~600 characters, so the player's per-segment highlight covers a few lines, not
+  twenty. 2,000 characters stays the hard limit the validator enforces. Dialogue is priced per character,
+  so smaller segments should not change the credit total; Core confirms this in Step 0.
+- **Per-line timing (not yet available):** if the ElevenLabs dialogue API turns out to return per-line
+  timestamps, Core will add them to dialogue segments as a new optional field, described here first.
+  Until then, follow-along highlighting works per segment.
 - Every script line appears in exactly one dialogue segment, in script order. Proof can rely on this.
 - `beds` play *under* the segments, from the start of `from_segment` to the end of `to_segment`.
   `loop: true` means repeat the file to fill the span. `gain_db` is Core's suggested starting level;
