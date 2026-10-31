@@ -7,6 +7,9 @@ PY="${PYTHON:-python}"
 echo "== Interface check on the sample files"
 "$PY" -m core.interface core/fixtures/sample
 
+echo "== Interface check on the real adaptation"
+"$PY" -m core.interface core/adaptation/script.json
+
 echo "== Placeholder stems generate and still pass the interface check"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
