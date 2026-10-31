@@ -4,3 +4,5 @@ output/
 cache/
 .venv/
 __pycache__/
+# Local stamp written by the verify hook after check.sh passes
+.claude/.verify-*

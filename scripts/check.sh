@@ -13,4 +13,10 @@ trap 'rm -rf "$tmp"' EXIT
 "$PY" -m core.placeholders --out "$tmp/placeholder"
 "$PY" -m core.interface "$tmp/placeholder"
 
+echo "== Proof eval tests"
+"$PY" -m unittest discover -s evals -t .
+
+echo "== Surface mixer tests (timing and filter graph only, no ffmpeg needed)"
+"$PY" -m unittest web.test_mix
+
 echo "check.sh: all checks passed"
