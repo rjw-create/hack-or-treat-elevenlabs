@@ -1,13 +1,13 @@
 # Submission draft: Full Cast
 
 Draft text for the Hack or Treat submission form, category **Best Project Built With ElevenLabs**.
-Paste each section into the matching field. Fill or cut every `[TBD: ...]` before submitting.
+Paste each section into the matching field. Resolve every `[TBD: ...]` and `[CHECK: ...]` before submitting.
 
 ## Name
 Full Cast
 
 ## One-line description
-A public-domain ghost story turned into a five-minute audio drama with a full voice cast, sound
+A public-domain ghost story turned into a five-and-a-half-minute audio drama with a full voice cast, sound
 effects and ambience, and a player that lets you switch between a plain audiobook and the full cast.
 
 ## What it does
@@ -35,9 +35,10 @@ a one-voice reading and the full cast at the same moment.
   each in its own git worktree, joined by a written interface.
 
 ## Budget and scope
-We had 10,000 ElevenLabs credits. That set the scope: the drama is an abridged version of about five
-minutes, not the full story. Every generated clip is cached so nothing is generated twice. The final
-render used `[TBD: credits, from python -m evals.credits]` credits for `[TBD: length]` of finished audio.
+We had 10,000 ElevenLabs credits. That set the scope: the drama is an abridged version of 5 minutes
+28 seconds, not the full story. Every generated clip is cached so nothing is generated twice. The
+project used 7,280 of its 10,000 credits, previews and re-renders included.
+`[CHECK: confirm 7,280 on the ElevenLabs account page before submitting; the per-call log, mostly estimates, sums higher]`
 
 ## Challenges
 - Keeping a long multi-voice render inside a fixed credit budget: the script length was cut to fit
@@ -53,7 +54,7 @@ render used `[TBD: credits, from python -m evals.credits]` credits for `[TBD: le
 - More public-domain stories through the same pipeline.
 
 ## Links
-- Code: `[TBD: repository URL, if it is made public]`
+- Code: https://github.com/rjw-create/hack-or-treat-elevenlabs (private until Jackson makes it public)
 - Demo video: `[TBD]`
 
 ## Credits
