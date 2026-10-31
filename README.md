@@ -1,7 +1,7 @@
 # Full Cast
 
 Full Cast turns a public-domain short story into a short audio drama: a different voice for every
-character, sound effects between lines, ambience and music under the scenes, and a script that follows
+character, sound effects between lines, ambience and a low drone under the scenes, and a script that follows
 along as it plays. The player has a before/after toggle, so you can hear the same passage as a plain
 one-voice audiobook and then as the full cast.
 
@@ -19,17 +19,17 @@ Entry for Hack or Treat (2026-10-31), category **Best Project Built With ElevenL
    and then checked by hand, not generated through an API call at run time. It is in
    [`core/adaptation/script.json`](core/adaptation/script.json); the source text is in
    [`core/texts/`](core/texts/).
-2. **Cast.** Each character gets one ElevenLabs voice: a library voice or one made with Voice Design
-   from a short written description. No voice is cloned from a real person.
+2. **Cast.** Each character gets one premade voice from the ElevenLabs library, picked to match a short
+   written description. No voice is cloned from a real person.
 3. **Render.** Dialogue is generated with ElevenLabs Text to Dialogue, several lines per request, so
-   speakers react to each other. Sound effects and ambience are generated from short text cues
-   (music source: `[TBD: confirm from Core's render]`). Every generated clip is cached, so nothing is
-   paid for twice.
+   speakers react to each other. Sound effects, ambience and the theme (a low drone, not composed
+   music) are generated from short text cues with ElevenLabs sound effects. Every generated clip is
+   cached, so nothing is paid for twice.
 4. **Mix.** `web/mix.py` measures every clip, places them in order with their pauses, loops the
-   ambience under each scene, lowers the music while people talk, and writes one MP3.
-5. **Play.** `web/index.html` plays the drama with the script highlighted as it goes: the line being
-   spoken when ElevenLabs returns per-line timing with the dialogue, otherwise the few lines of the
-   current clip (`[TBD: confirm which on the real render]`). It also has a chapter list
+   ambience under each scene, lowers the drone while people talk, and writes one MP3.
+5. **Play.** `web/index.html` plays the drama with the line being spoken highlighted, using the
+   per-line times ElevenLabs returns with the dialogue (if a clip has none, its few lines light
+   together). It also has a chapter list
    and the before/after toggle.
 
 How the parts talk to each other is written down in [`docs/2026-10-31-interface.md`](docs/2026-10-31-interface.md).
@@ -60,7 +60,8 @@ them and open http://127.0.0.1:8000/web/?mix=real :
 python -m web.mix --src ../elevenlabs-shared/output --out output/mix/real
 ```
 Rendering the real clips spends ElevenLabs credits and needs `ELEVENLABS_API_KEY` in `.env`. Only the
-Core role runs that step. `[TBD: Core's render command once it is merged]`
+Core role runs that step, with `python -m core run` (`python -m core run --dry-run` lists the work
+and the estimated credits without spending any).
 
 ## Budget and scope, honestly
 - The whole project runs on a **10,000-credit** ElevenLabs budget, with at least 1,500 kept in reserve
@@ -97,5 +98,5 @@ stays in one place. See [`2026-10-31-ROLES.md`](2026-10-31-ROLES.md).
 ## Credits
 - **Story:** "The Monkey's Paw" by W. W. Jacobs (1863-1943), first published in 1902. Public domain.
   This adaptation abridges it.
-- **Voices, sound effects and music:** generated with ElevenLabs.
+- **Voices, sound effects, ambience and the theme drone:** generated with ElevenLabs.
 - **Adaptation and code:** written with Claude Code.

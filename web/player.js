@@ -230,7 +230,9 @@ async function load() {
 
   renderChapters();
   renderScript(script);
-  fullNote = `${script.characters.length} voices, sound effects, ambience and music.`;
+  // Count who actually speaks: a preview of one scene lists the whole cast but not all of it talks.
+  const speakers = new Set(script.scenes.flatMap((s) => s.lines.map((l) => l.speaker)));
+  fullNote = `${speakers.size} voices, sound effects and ambience.`;
   modeNote.textContent = fullNote;
   if (!timeline.compare) flatButton.disabled = true;
   audio.src = base + timeline.file;

@@ -8,24 +8,25 @@ Full Cast
 
 ## One-line description
 A public-domain ghost story turned into a five-minute audio drama with a full voice cast, sound
-effects and music, and a player that lets you switch between a plain audiobook and the full cast.
+effects and ambience, and a player that lets you switch between a plain audiobook and the full cast.
 
 ## What it does
 Full Cast adapts "The Monkey's Paw" (W. W. Jacobs, 1902) into a short radio-style drama in three
 scenes and 49 lines. Each of the six characters has their own ElevenLabs voice, scenes are voiced with Text to Dialogue so the speakers react
 to each other, and sound effects and ambience are generated from short text cues. A mixer places every
-clip in order, loops ambience under each scene and lowers the music while people speak. The player
+clip in order, loops ambience under each scene and lowers a low theme drone while people speak. The player
 shows the script following along, has a chapter list, and has a before/after toggle that jumps between
 a one-voice reading and the full cast at the same moment.
 
 ## How we built it
 - **Adaptation:** written with Claude Code during the session and checked by hand. Lines carry
   ElevenLabs audio tags for delivery, such as `[whispers]`.
-- **Voices:** ElevenLabs library voices and Voice Design from written descriptions. No cloned voices.
+- **Voices:** six premade ElevenLabs library voices, matched to written character descriptions. No cloned voices.
 - **Dialogue:** ElevenLabs Text to Dialogue, several lines per request.
-- **Sound:** ElevenLabs sound effects and beds from text cues. `[TBD: confirm the music source once Core's render is done]`
+- **Sound:** ElevenLabs sound effects from text cues, for the effects, the ambience under each scene and
+  a low theme drone. There is no composed music.
 - **Mix:** Python and FFmpeg. The mixer reads a plan (`segments.json`), measures each clip and builds
-  one FFmpeg filter graph. Music ducking follows the dialogue timeline.
+  one FFmpeg filter graph. The drone ducks under dialogue, following the dialogue timeline.
 - **Player:** one static HTML page, no framework.
 - **Checks:** scripts confirm every line is spoken once and in order, check every clip for silence,
   clipping and loudness, and report credit use. None of them spend credits.
@@ -42,7 +43,7 @@ render used `[TBD: credits, from python -m evals.credits]` credits for `[TBD: le
   before anything was generated.
 - Timing without timestamps: clips have no fixed start times, so the mixer measures each one and builds
   the timeline itself. The script highlighting comes from that same timeline, using the per-line times
-  ElevenLabs returns with the dialogue where it has them. `[TBD: confirm on the real render]`
+  ElevenLabs returns with the dialogue, so the line being spoken is highlighted.
 - A local-server problem: Python's built-in server can't serve partial files, so the browser couldn't
   seek in the audio. We wrote a small server that can.
 
@@ -56,4 +57,4 @@ render used `[TBD: credits, from python -m evals.credits]` credits for `[TBD: le
 
 ## Credits
 "The Monkey's Paw" by W. W. Jacobs (1863-1943), first published 1902, public domain. Abridged for this
-adaptation. Voices, sound effects and music generated with ElevenLabs.
+adaptation. Voices, sound effects, ambience and the theme drone generated with ElevenLabs.
