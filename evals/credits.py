@@ -117,7 +117,30 @@ def finished_audio_s(folder, segments):
     return total_s, "dialogue + SFX stems + gaps; beds and the flat clip are not counted"
 
 
-def render(summary, folder, budget_credits, audio_s, audio_note):
+def load_pricing(folder):
+    """pricing.json next to usage.jsonl, or None when Core hasn't written it."""
+    path = Path(folder) / "pricing.json"
+    return load_json(path) if path.is_file() else None
+
+
+def render_pricing(pricing):
+    """Each price Core estimates with, and whether it is assumed, measured or still unknown."""
+    if pricing is None:
+        return ["- No `pricing.json` in this folder, so the basis of Core's estimates can't be shown."]
+    rate = pricing.get("dialogue_credits_per_char")
+    basis = pricing.get("dialogue_basis", "basis not given")
+    out = [f"- Dialogue and flat: {rate} credits per character ({basis})." if rate is not None
+           else "- Dialogue and flat: no rate in pricing.json."]
+    # Per-call prices only appear once measured from the balance (interface doc), so absence means unknown.
+    for label, key in (("SFX", "sfx_credits_per_call"), ("Ambience", "ambience_credits_per_call"),
+                       ("Music", "music_credits_per_call")):
+        price = pricing.get(key)
+        out.append(f"- {label}: {price} credits per call (measured)." if price is not None
+                   else f"- {label}: unknown, not measured yet.")
+    return out
+
+
+def render(summary, folder, budget_credits, audio_s, audio_note, pricing=None):
     t = summary["total"]
     out = ["# Credit report", ""]
     if summary["sample"]:
@@ -146,6 +169,7 @@ def render(summary, folder, budget_credits, audio_s, audio_note):
         out.append(f"- **Credits per minute of finished audio:** not available ({audio_note}).")
     hit_pct = 100 * t["cache_hits"] / t["calls"] if t["calls"] else 0
     out.append(f"- **Cache hits:** {t['cache_hits']} of {t['calls']} calls ({hit_pct:.0f}%), each costing 0 credits.")
+    out += ["", "## Prices Core estimates with (`pricing.json`)", ""] + render_pricing(pricing)
     return "\n".join(out) + "\n"
 
 
@@ -160,6 +184,7 @@ def main(argv):
 
     try:
         summary = summarise(load_usage(folder / "usage.jsonl"), allow_sample=args.allow_sample)
+        pricing = load_pricing(folder)
     except (OSError, ValueError) as e:
         print(f"ERROR {e}", file=sys.stderr)
         return 1
@@ -168,7 +193,7 @@ def main(argv):
     else:
         # A preview can land before the full render, so the spend is still worth reporting.
         audio_s, audio_note = None, "no segments.json in this folder yet (full render not done)"
-    report = render(summary, folder, args.budget_credits, audio_s, audio_note)
+    report = render(summary, folder, args.budget_credits, audio_s, audio_note, pricing)
     print(report, end="")
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)

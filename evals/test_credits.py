@@ -53,6 +53,19 @@ class Accounting(unittest.TestCase):
         self.assertEqual(credits.credits_of(summary["total"]), 400)
         self.assertIn("Of which previews", credits.render(summary, ".", 10_000, None, "n/a"))
 
+    def test_pricing_labels_assumed_measured_and_unknown(self):
+        lines = credits.render_pricing({
+            "dialogue_credits_per_char": 1.0,
+            "dialogue_basis": "assumed (1 credit per character x model multiplier)",
+            "sfx_credits_per_call": 120,
+        })
+        self.assertIn("- Dialogue and flat: 1.0 credits per character (assumed (1 credit per character x model multiplier)).", lines)
+        self.assertIn("- SFX: 120 credits per call (measured).", lines)
+        self.assertIn("- Music: unknown, not measured yet.", lines)
+
+    def test_missing_pricing_is_said_plainly(self):
+        self.assertIn("No `pricing.json`", credits.render_pricing(None)[0])
+
     def test_unknown_feature_is_an_error(self):
         with self.assertRaises(ValueError):
             credits.summarise([row(feature="speech_to_text")])
