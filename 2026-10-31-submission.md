@@ -54,8 +54,8 @@ Dialogue costs 1 credit per character; sound effects about 100 each.
 - More public-domain stories through the same pipeline.
 
 ## Links
-- Live demo: https://rjw-create.github.io/hack-or-treat-elevenlabs/demo/
-- Code: https://github.com/rjw-create/hack-or-treat-elevenlabs
+- Live demo: https://rjw-create.github.io/hack-or-treat-full-cast/demo/
+- Code: https://github.com/rjw-create/hack-or-treat-full-cast
 - Demo video: `[TBD]`
 
 ## Credits
