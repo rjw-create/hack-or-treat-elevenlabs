@@ -40,7 +40,25 @@ class Checks(unittest.TestCase):
         key, _ = audio_checks.loudness_key(results)
         audio_checks.flag_loudness(results, key)
         audio_checks.effective_gaps(results, self.segments)
+        audio_checks.check_line_times(results, self.segments)
         return results
+
+    def set_line_times(self, times):
+        # s01-d002 holds s01-l004 and s01-l005; its placeholder stem is 6.37 s long.
+        seg = next(s for s in self.segments["segments"] if s["id"] == "s01-d002")
+        seg["line_times_ms"] = [{"line_id": i, "start_ms": a, "end_ms": b} for i, a, b in times]
+
+    def test_good_line_times_pass(self):
+        self.set_line_times([("s01-l004", 0, 3500), ("s01-l005", 3550, 6200)])
+        self.assertEqual(self.run_checks()["s01-d002"]["warnings"], [])
+
+    def test_line_times_past_the_stem_end_warn(self):
+        self.set_line_times([("s01-l004", 0, 3500), ("s01-l005", 3550, 9000)])
+        self.assertTrue(any("past the" in w for w in self.run_checks()["s01-d002"]["warnings"]))
+
+    def test_line_times_out_of_order_warn(self):
+        self.set_line_times([("s01-l005", 0, 3500), ("s01-l004", 3550, 6200)])
+        self.assertTrue(any("in order" in w for w in self.run_checks()["s01-d002"]["warnings"]))
 
     def replace(self, stem_id, samples):
         stem = next(s for s in self.segments["segments"] if s["id"] == stem_id)

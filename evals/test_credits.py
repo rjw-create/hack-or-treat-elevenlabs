@@ -44,6 +44,28 @@ class Accounting(unittest.TestCase):
         summary = credits.summarise([row(feature="sfx")])
         self.assertIn("lower bound", credits.basis_label(summary["by_feature"]["sfx"]))
 
+    def test_preview_spend_is_split_out(self):
+        summary = credits.summarise([
+            row(estimated=100, output="preview-s01/stems/dialogue/s01-d001.mp3"),
+            row(estimated=300, output="stems/dialogue/s01-d001.mp3"),
+        ])
+        self.assertEqual(credits.credits_of(summary["preview"]), 100)
+        self.assertEqual(credits.credits_of(summary["total"]), 400)
+        self.assertIn("Of which previews", credits.render(summary, ".", 10_000, None, "n/a"))
+
+    def test_pricing_labels_assumed_measured_and_unknown(self):
+        lines = credits.render_pricing({
+            "dialogue_credits_per_char": 1.0,
+            "dialogue_basis": "assumed (1 credit per character x model multiplier)",
+            "sfx_credits_per_call": 120,
+        })
+        self.assertIn("- Dialogue and flat: 1.0 credits per character (assumed (1 credit per character x model multiplier)).", lines)
+        self.assertIn("- SFX: 120 credits per call (measured).", lines)
+        self.assertIn("- Music: unknown, not measured yet.", lines)
+
+    def test_missing_pricing_is_said_plainly(self):
+        self.assertIn("No `pricing.json`", credits.render_pricing(None)[0])
+
     def test_unknown_feature_is_an_error(self):
         with self.assertRaises(ValueError):
             credits.summarise([row(feature="speech_to_text")])
@@ -72,6 +94,16 @@ class OnPlaceholders(unittest.TestCase):
         out = self.folder / "report.md"
         self.assertEqual(credits.main([str(self.folder), "--allow-sample", "--out", str(out)]), 0)
         self.assertIn("SAMPLE DATA", out.read_text(encoding="utf-8"))
+
+    def test_report_works_before_segments_json_exists(self):
+        # A one-scene preview can log spend before the full render writes segments.json.
+        early = self.folder / "preview-only"
+        early.mkdir()
+        (early / "usage.jsonl").write_text(
+            json.dumps(row(estimated=50, output="preview-s01/stems/dialogue/s01-d001.mp3")) + "\n", encoding="utf-8")
+        out = early / "report.md"
+        self.assertEqual(credits.main([str(early), "--out", str(out)]), 0)
+        self.assertIn("no segments.json in this folder yet", out.read_text(encoding="utf-8"))
 
     def test_bad_json_line_is_reported(self):
         bad = self.folder / "bad-usage"
