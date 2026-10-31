@@ -2,7 +2,8 @@
 
 Errors (exit code 1): a stem is missing, unreadable, silent or clipped.
 Warnings (reported, exit code 0): loudness far from the median for its kind, long silence inside a
-dialogue stem, and silence at stem edges that stretches a planned gap.
+dialogue stem, silence at stem edges that stretches a planned gap, and line_times_ms that don't fit
+the stem.
 
 Loudness is integrated LUFS from ffmpeg when it is installed; otherwise RMS dBFS, labelled as such.
 Usage: python -m evals.audio_checks [output folder] [--out report.md]
@@ -22,6 +23,8 @@ SILENT_STEM_DBFS = -60.0  # a whole stem this quiet is almost certainly a failed
 FAR_FROM_MEDIAN_DB = 6.0  # wide enough for acted whispers and shouts, narrow enough to catch a stem at the wrong level
 LONG_INNER_SILENCE_S = 2.0  # dead air this long inside a dialogue stem is likely a generation glitch
 EXTRA_GAP_WARN_MS = 500  # edge silence adding more than this to a planned gap is audible as dead air
+LINE_OVERLAP_MS = 50  # small overlaps between consecutive line times are rounding, not a problem
+STEM_END_SLACK_MS = 100  # MP3 decoders can trim or pad a few frames at the end of a stem
 
 
 def stems(segments):
@@ -99,6 +102,36 @@ def effective_gaps(results, segments):
     return gaps
 
 
+def check_line_times(results, segments):
+    """Warn when optional line_times_ms can't be trusted for follow-along highlighting.
+
+    Times are relative to the segment's own stem (interface doc), so every line must start before it
+    ends, lines must not run backwards, ids must belong to the segment in order, and the last end must
+    fit in the stem.
+    """
+    for seg in segments["segments"]:
+        times = seg.get("line_times_ms")
+        row = results[seg["id"]]
+        if seg.get("kind") != "dialogue" or not times or "duration_s" not in row:
+            continue
+        ids = [t.get("line_id") for t in times]
+        if [i for i in seg["line_ids"] if i in ids] != ids or len(set(ids)) != len(ids):
+            row["warnings"].append("line_times_ms ids are not this segment's lines in order")
+        previous_end_ms = 0
+        for t in times:
+            start_ms, end_ms = t.get("start_ms"), t.get("end_ms")
+            if not (isinstance(start_ms, (int, float)) and isinstance(end_ms, (int, float)) and 0 <= start_ms < end_ms):
+                row["warnings"].append(f"line_times_ms for {t.get('line_id')} needs 0 <= start_ms < end_ms")
+                continue
+            if start_ms < previous_end_ms - LINE_OVERLAP_MS:
+                row["warnings"].append(f"line_times_ms for {t.get('line_id')} starts {previous_end_ms - start_ms:.0f} ms "
+                                       "before the previous line ends")
+            previous_end_ms = end_ms
+        stem_ms = 1000 * row["duration_s"]
+        if previous_end_ms > stem_ms + STEM_END_SLACK_MS:
+            row["warnings"].append(f"line_times_ms ends at {previous_end_ms:.0f} ms, past the {stem_ms:.0f} ms stem")
+
+
 def fmt(value, digits=1):
     return "-" if value is None else f"{value:.{digits}f}"
 
@@ -152,6 +185,7 @@ def main(argv):
     key, label = loudness_key(results)
     medians = flag_loudness(results, key)
     gaps = effective_gaps(results, segments)
+    check_line_times(results, segments)
     report, errors = render(folder, results, key, label, medians, gaps, is_sample(folder))
     print(report, end="")
     if args.out:

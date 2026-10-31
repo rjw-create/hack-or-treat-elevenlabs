@@ -51,6 +51,17 @@ def row_cost(row):
     return 0, "unknown"
 
 
+def add_row(t, row):
+    credits, basis = row_cost(row)
+    t["calls"] += 1
+    if basis == "cache_hit":
+        t["cache_hits"] += 1
+    else:
+        t[f"{basis}_calls"] += 1
+        if basis != "unknown":
+            t[f"{basis}_credits"] += credits
+
+
 def summarise(rows, allow_sample=False):
     sample_rows = sum(1 for r in rows if r.get("sample"))
     if sample_rows and not allow_sample:
@@ -62,19 +73,15 @@ def summarise(rows, allow_sample=False):
         raise ValueError(f"usage.jsonl has features outside {list(FEATURES)}: {unknown_features}")
 
     by_feature = {f: dict.fromkeys(COUNTERS, 0) for f in FEATURES}
+    preview = dict.fromkeys(COUNTERS, 0)
     for r in rows:
-        credits, basis = row_cost(r)
-        t = by_feature[r["feature"]]
-        t["calls"] += 1
-        if basis == "cache_hit":
-            t["cache_hits"] += 1
-        else:
-            t[f"{basis}_calls"] += 1
-            if basis != "unknown":
-                t[f"{basis}_credits"] += credits
+        add_row(by_feature[r["feature"]], r)
+        # Previews write under preview-<scene>/ (interface doc); they cost credits but are not in the finished audio.
+        if str(r.get("output", "")).startswith("preview-"):
+            add_row(preview, r)
     total = {k: sum(t[k] for t in by_feature.values()) for k in COUNTERS}
     runs = sorted({r.get("run_id") for r in rows if r.get("run_id")})
-    return {"by_feature": by_feature, "total": total, "sample": sample_rows > 0, "runs": runs}
+    return {"by_feature": by_feature, "total": total, "preview": preview, "sample": sample_rows > 0, "runs": runs}
 
 
 def credits_of(t):
@@ -126,6 +133,10 @@ def render(summary, folder, budget_credits, audio_s, audio_note):
     spent = credits_of(t)
     out.append(f"- **Budget:** {spent:,} of {budget_credits:,} credits used ({100 * spent / budget_credits:.1f}%), "
                f"{budget_credits - spent:,} left. Based on: {basis_label(t)}.")
+    p = summary["preview"]
+    if p["calls"]:
+        out.append(f"- **Of which previews** (`preview-*/`): {credits_of(p):,} credits over {p['calls']} calls. "
+                   f"Based on: {basis_label(p)}.")
     if audio_s:
         out.append(f"- **Finished audio:** {audio_s:.1f} s ({audio_s / 60:.2f} min), {audio_note}.")
         out.append(f"- **Credits per minute of finished audio:** {spent / (audio_s / 60):,.0f} "
@@ -152,7 +163,11 @@ def main(argv):
     except (OSError, ValueError) as e:
         print(f"ERROR {e}", file=sys.stderr)
         return 1
-    audio_s, audio_note = finished_audio_s(folder, load_json(folder / "segments.json"))
+    if (folder / "segments.json").is_file():
+        audio_s, audio_note = finished_audio_s(folder, load_json(folder / "segments.json"))
+    else:
+        # A preview can land before the full render, so the spend is still worth reporting.
+        audio_s, audio_note = None, "no segments.json in this folder yet (full render not done)"
     report = render(summary, folder, args.budget_credits, audio_s, audio_note)
     print(report, end="")
     if args.out:
